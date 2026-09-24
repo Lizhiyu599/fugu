@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>French Retro Desktop</title>
 
-  <!-- 全局与基础样式 -->
+  <!-- 全局样式 -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
 
-  <!-- 独立软件模块 CSS -->
+  <!-- 独立应用 CSS（后续增加新应用只需引入对应的 CSS 文件） -->
   <link rel="stylesheet" href="css/settings-app.css">
 </head>
 <body>
@@ -45,8 +45,8 @@
     <!-- 底部 Dock 栏 -->
     <div class="dock-wrapper">
       <div class="glass-dock" id="main-dock">
-        <!-- “设置”应用图标（点击通过 AppManager 唤起） -->
-        <div class="dock-item" onclick="AppManager.open('settings')" title="Réglages / 设置">
+        <!-- 点击“设置”图标，通过 AppManager 启动软件并进入该软件全屏 View -->
+        <div class="dock-item" onclick="AppManager.launch('settings')" title="Réglages / 设置">
           <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M19.4 15A1.65 1.65 0 0 0 20 12A1.65 1.65 0 0 0 19.4 9M4.6 9A1.65 1.65 0 0 0 4 12A1.65 1.65 0 0 0 4.6 15M15 19.4A1.65 1.65 0 0 0 12 20A1.65 1.65 0 0 0 9 19.4M9 4.6A1.65 1.65 0 0 0 12 4A1.65 1.65 0 0 0 15 4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -57,65 +57,13 @@
       </div>
     </div>
 
-    <!-- “设置”应用 UI 弹窗 -->
-    <div class="settings-modal-overlay" id="settings-app-modal" onclick="SettingsApp.close()">
-      <div class="settings-glass-card" onclick="event.stopPropagation()">
-        
-        <div class="settings-header">
-          <div class="settings-title-group">
-            <span class="settings-title-en">Réglages</span>
-            <span class="settings-title-cn">系统设置</span>
-          </div>
-          <button class="settings-close-btn" onclick="SettingsApp.close()">×</button>
-        </div>
-
-        <div class="settings-body">
-          <!-- API 配置 -->
-          <div class="settings-section">
-            <div class="settings-section-title">API 接口配置</div>
-            <div class="settings-item">
-              <label for="set-api-key">API Key</label>
-              <div class="settings-input-group">
-                <input type="password" id="set-api-key" placeholder="sk-..." autocomplete="off">
-                <button type="button" class="settings-btn-sm" onclick="SettingsApp.togglePasswordVisibility('set-api-key')">显示</button>
-              </div>
-            </div>
-            <div class="settings-item">
-              <label for="set-api-url">API Base URL</label>
-              <input type="text" id="set-api-url" placeholder="https://api.openai.com/v1">
-            </div>
-            <div class="settings-item">
-              <label for="set-api-model">默认 Model 名称</label>
-              <input type="text" id="set-api-model" placeholder="gpt-4o / deepseek-chat">
-            </div>
-            <button class="settings-btn primary" onclick="SettingsApp.testApiConnection()">测试 API 连通性</button>
-          </div>
-
-          <!-- 数据管理 -->
-          <div class="settings-section">
-            <div class="settings-section-title">数据管理</div>
-            <div class="settings-grid-2">
-              <button class="settings-btn" onclick="SettingsApp.exportData()">导出数据备份</button>
-              <button class="settings-btn" onclick="SettingsApp.triggerImport()">导入数据备份</button>
-              <input type="file" id="set-import-file" accept=".json" style="display: none;" onchange="SettingsApp.importData(event)">
-            </div>
-            <button class="settings-btn danger" onclick="SettingsApp.resetAll()">恢复出厂默认</button>
-          </div>
-        </div>
-
-        <div class="settings-footer">
-          <button class="settings-btn settings-save-btn" onclick="SettingsApp.saveSettings()">保存配置</button>
-        </div>
-
-      </div>
-    </div>
-
   </main>
 
-  <!-- 基础与调度 JS -->
+  <!-- 基础与调度脚本 -->
   <script src="js/main.js"></script>
   <script src="js/apps.js"></script>
-  <!-- 独立应用 JS -->
+
+  <!-- 独立应用脚本（后续新增应用只需在下方添加脚本文件） -->
   <script src="js/settings-app.js"></script>
 </body>
 </html>
