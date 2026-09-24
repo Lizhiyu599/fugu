@@ -1,0 +1,79 @@
+/* 全局高透玻璃胶囊 Toast 容器 */
+.glass-toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 胶囊卡片主体 */
+.glass-toast {
+  pointer-events: auto;
+  min-width: 140px;
+  max-width: 85vw;
+  padding: 10px 20px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111111;
+  user-select: none;
+  touch-action: none; /* 允许精准手势拖拽 */
+  cursor: grab;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.glass-toast:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+}
+
+/* 状态加载动画 (加载中的 ...) */
+.toast-dots-spinner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toast-dots-spinner span {
+  width: 5px;
+  height: 5px;
+  background-color: #111;
+  border-radius: 50%;
+  display: inline-block;
+  animation: toastDotBounce 1.4s infinite ease-in-out both;
+}
+
+.toast-dots-spinner span:nth-child(1) { animation-delay: -0.32s; }
+.toast-dots-spinner span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes toastDotBounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* 图标与成功指示 */
+.toast-icon-success {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.toast-icon-error {
+  color: #d32f2f;
+  font-weight: bold;
+}
