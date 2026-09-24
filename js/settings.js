@@ -329,3 +329,36 @@ if (window.AppManager) {
     }
   });
 }
+
+/**
+ * 1. 头像上传与 Base64 本地化存储函数
+ */
+SettingsApp.handleAvatarUpload = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 使用 FileReader 将图片文件转换为 Base64 编码字符串
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64Avatar = e.target.result; // 获取到的 Base64 文本数据
+
+    // 1. 实时更新页面上所有头像 <img> 标签的显示
+    const avatarImgs = document.querySelectorAll('.user-avatar-img');
+    avatarImgs.forEach(img => img.src = base64Avatar);
+
+    // 2. 存入公共缓存
+    localStorage.setItem('french_desktop_avatar', base64Avatar);
+
+    // 3. 同步保存到当前登录用户的数据空间中（只要不手动退出登录，刷新后依然存在）
+    if (window.AuthManager && AuthManager.currentUser) {
+      AuthManager.saveUserData('avatar', base64Avatar);
+    }
+
+    // 弹出成功提示
+    if (window.Toast) {
+      Toast.show({ message: '头像已保存', type: 'success', duration: 2000 });
+    }
+  };
+
+  reader.readAsDataURL(file);
+};
