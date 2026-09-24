@@ -4,15 +4,6 @@
 const EmbellirApp = {
   id: 'embellir',
   containerEl: null,
-
-  // 预设壁纸选项（仅作供选择的项目）
-  wallpapers: [
-    { id: 'wp1', name: 'Rétro Gold', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80' },
-    { id: 'wp2', name: 'Paris Night', url: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
-    { id: 'wp3', name: 'Minimal Fog', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80' }
-  ],
-
-  currentWallpaper: '',
   isInfoBarEnabled: true,
 
   // 1. 渲染应用 View
@@ -21,23 +12,23 @@ const EmbellirApp = {
 
     const appHTML = `
       <div class="app-view-embellir" id="app-view-embellir">
-        <!-- 顶部导航栏 -->
+        <!-- 顶部导航栏（已留出顶栏高度） -->
         <div class="app-nav-bar">
           <button class="app-back-btn" onclick="AppManager.backToHome()" title="Retour">
             <img src="https://i.ibb.co/Kc8JLNTX/1782649743993.png" class="app-back-img" alt="Back">
           </button>
           <div class="app-page-title">
-            <span class="en">Embellir</span>
+            <span>Embellir</span>
           </div>
-          <div style="width: 40px;"></div>
+          <div style="width: 24px;"></div>
         </div>
 
         <!-- 内容区域 -->
-        <div style="flex: 1; overflow-y: auto; padding-bottom: 20px;">
-          <!-- 1. 桌面顶部信息栏控制 -->
+        <div style="flex: 1; overflow-y: auto; padding-bottom: 30px;">
+          <!-- 1. 桌面顶部信息栏开关 -->
           <div class="embellir-group">
             <div class="embellir-switch-row">
-              <span class="switch-label">显示桌面顶部信息栏</span>
+              <span class="switch-label">显示顶部信息栏</span>
               <label class="custom-switch">
                 <input type="checkbox" id="embellir-infobar-toggle" onchange="EmbellirApp.toggleInfoBar(this.checked)">
                 <span class="slider"></span>
@@ -45,19 +36,24 @@ const EmbellirApp = {
             </div>
           </div>
 
-          <!-- 2. 壁纸更换面板 -->
+          <!-- 2. 自定义桌面壁纸 -->
           <div class="embellir-group">
             <div class="embellir-group-title">桌面壁纸</div>
-            <div class="wallpaper-grid" id="wallpaper-grid">
-              <!-- 自定义上传框 -->
-              <div class="wallpaper-item wallpaper-upload-btn" onclick="document.getElementById('custom-wallpaper-input').click()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 5v14M5 12h14"/>
-                </svg>
-                <span>自定义</span>
-              </div>
-              <input type="file" id="custom-wallpaper-input" accept="image/*" style="display:none;" onchange="EmbellirApp.handleCustomWallpaper(event)">
+            
+            <!-- 上传大卡片 -->
+            <div class="wallpaper-upload-card" onclick="EmbellirApp.triggerWallpaperUpload()">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <div class="upload-title">从相册选择壁纸</div>
+              <div class="upload-sub">点击打开相册更换桌面背景</div>
             </div>
+
+            <input type="file" id="embellir-wallpaper-input" accept="image/*" style="display:none;" onchange="EmbellirApp.handleCustomWallpaper(event)">
+
+            <button class="wallpaper-reset-btn" onclick="EmbellirApp.resetToDefaultWallpaper()">恢复默认初始壁纸</button>
           </div>
         </div>
       </div>
@@ -65,7 +61,6 @@ const EmbellirApp = {
 
     document.getElementById('desktop').insertAdjacentHTML('beforeend', appHTML);
     this.containerEl = document.getElementById('app-view-embellir');
-    this.renderWallpapers();
   },
 
   open() {
@@ -82,44 +77,15 @@ const EmbellirApp = {
     }
   },
 
-  // 渲染壁纸列表
-  renderWallpapers() {
-    const grid = document.getElementById('wallpaper-grid');
-    if (!grid) return;
-
-    const uploadBtn = grid.querySelector('.wallpaper-upload-btn');
-    grid.innerHTML = '';
-    grid.appendChild(uploadBtn);
-
-    this.wallpapers.forEach(wp => {
-      const item = document.createElement('div');
-      item.className = `wallpaper-item ${this.currentWallpaper === wp.url ? 'active' : ''}`;
-      item.style.backgroundImage = `url('${wp.url}')`;
-      item.onclick = () => this.setWallpaper(wp.url);
-      grid.appendChild(item);
-    });
-  },
-
-  // 设置桌面背景（只有主动选择时调用）
-  setWallpaper(url) {
-    if (!url) return;
-    this.currentWallpaper = url;
-    const desktop = document.getElementById('desktop');
-    if (desktop) {
-      desktop.style.backgroundImage = `url('${url}')`;
-      desktop.style.backgroundSize = 'cover';
-      desktop.style.backgroundPosition = 'center';
-    }
-
-    this.renderWallpapers();
-
-    localStorage.setItem('embellir_wallpaper', url);
-    if (window.AuthManager && AuthManager.currentUser) {
-      AuthManager.saveUserData('embellir_wallpaper', url);
+  // 触发相册/图库选择
+  triggerWallpaperUpload() {
+    const input = document.getElementById('embellir-wallpaper-input');
+    if (input) {
+      input.click();
     }
   },
 
-  // 处理自定义图片上传
+  // 处理图库图片选择
   handleCustomWallpaper(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -132,7 +98,35 @@ const EmbellirApp = {
     reader.readAsDataURL(file);
   },
 
-  // 切换顶部信息栏显示
+  // 设置壁纸
+  setWallpaper(url) {
+    const desktop = document.getElementById('desktop');
+    if (desktop) {
+      desktop.style.backgroundImage = `url('${url}')`;
+      desktop.style.backgroundSize = 'cover';
+      desktop.style.backgroundPosition = 'center';
+    }
+
+    localStorage.setItem('embellir_custom_wallpaper', url);
+    if (window.AuthManager && AuthManager.currentUser) {
+      AuthManager.saveUserData('embellir_custom_wallpaper', url);
+    }
+  },
+
+  // 重置回初始默认壁纸
+  resetToDefaultWallpaper() {
+    const desktop = document.getElementById('desktop');
+    if (desktop) {
+      desktop.style.backgroundImage = ''; // 清除内联样式，还原 CSS 中最开始设置的原始背景
+    }
+
+    localStorage.removeItem('embellir_custom_wallpaper');
+    if (window.AuthManager && AuthManager.currentUser) {
+      AuthManager.saveUserData('embellir_custom_wallpaper', null);
+    }
+  },
+
+  // 切换顶部信息栏显示状态
   toggleInfoBar(enabled) {
     this.isInfoBarEnabled = enabled;
     const infoBar = document.getElementById('top-info-bar');
@@ -149,22 +143,22 @@ const EmbellirApp = {
 
   // 恢复状态
   loadState() {
-    // 1. 壁纸恢复（若之前没保存过，则不修改默认背景）
+    // 1. 壁纸恢复（如果用户没上传过自定义壁纸，绝不覆盖初始壁纸）
     let savedWp = null;
     if (window.AuthManager && AuthManager.currentUser) {
       const userKey = `user_${AuthManager.currentUser.uid}_data`;
       try {
         const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
-        savedWp = userData['embellir_wallpaper'];
+        savedWp = userData['embellir_custom_wallpaper'];
       } catch(e) {}
     }
-    if (!savedWp) savedWp = localStorage.getItem('embellir_wallpaper');
+    if (!savedWp) savedWp = localStorage.getItem('embellir_custom_wallpaper');
 
     if (savedWp) {
       this.setWallpaper(savedWp);
     }
 
-    // 2. 信息栏开关恢复
+    // 2. 信息栏开关状态恢复
     let savedBarState = null;
     if (window.AuthManager && AuthManager.currentUser) {
       const userKey = `user_${AuthManager.currentUser.uid}_data`;
@@ -184,7 +178,7 @@ const EmbellirApp = {
     this.toggleInfoBar(this.isInfoBarEnabled);
   },
 
-  // 顶栏实时时间与电量
+  // 实时更新顶部信息栏时间和电量
   initInfoBarService() {
     const updateTime = () => {
       const timeEl = document.getElementById('info-time-text');
@@ -208,12 +202,12 @@ const EmbellirApp = {
         };
         updateBattery();
         battery.addEventListener('levelchange', updateBattery);
-      });
+      }).catch(() => {});
     }
   }
 };
 
-// 注册应用并开启顶栏服务
+// 初始化注册
 document.addEventListener('DOMContentLoaded', () => {
   if (window.AppManager) {
     AppManager.register('embellir', EmbellirApp);
