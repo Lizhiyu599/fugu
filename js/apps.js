@@ -1,40 +1,49 @@
 /**
- * 桌面应用调度中心 (AppManager)
- * 负责统一掌控“进入应用”、“退出返回桌面”的生命周期
+ * 应用统一调度中心 (AppManager)
  */
-
 const AppManager = {
-  currentAppId: null,
   apps: {},
+  activeAppId: null,
 
-  // 注册新应用
-  register(appId, appInstance) {
-    this.apps[appId] = appInstance;
+  // 1. 注册应用
+  register(id, appInstance) {
+    this.apps[id] = appInstance;
   },
 
-  // 进入软件 View
-  launch(appId) {
-    if (this.apps[appId] && typeof this.apps[appId].open === 'function') {
-      this.currentAppId = appId;
-      this.apps[appId].open();
-    } else {
-      console.error(`应用 [${appId}] 未注册或无法打开`);
+  // 2. 启动/唤起应用 View
+  launch(id) {
+    if (!this.apps[id]) {
+      console.error(`应用 [${id}] 未注册！`);
+      return;
+    }
+
+    // 如果已有激活的应用，先关闭
+    if (this.activeAppId && this.activeAppId !== id) {
+      this.close(this.activeAppId);
+    }
+
+    this.activeAppId = id;
+    this.apps[id].open();
+  },
+
+  // 3. 关闭应用
+  close(id) {
+    const appId = id || this.activeAppId;
+    if (appId && this.apps[appId]) {
+      this.apps[appId].close();
+      if (this.activeAppId === appId) {
+        this.activeAppId = null;
+      }
     }
   },
 
-  // 点击左上角箭头返回桌面
+  // 4. 返回桌面（通用方法）
   backToHome() {
-    if (this.currentAppId && this.apps[this.currentAppId]) {
-      this.apps[this.currentAppId].close();
-      this.currentAppId = null;
+    if (this.activeAppId) {
+      this.close(this.activeAppId);
     }
   }
 };
 
-// 页面加载完成后，注册已有的桌面应用
-document.addEventListener('DOMContentLoaded', () => {
-  // 注册“设置”软件
-  if (typeof SettingsApp !== 'undefined') {
-    AppManager.register('settings', SettingsApp);
-  }
-});
+// 暴露到全局 window
+window.AppManager = AppManager;
