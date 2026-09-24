@@ -1,0 +1,30 @@
+/* 底部 Dock 栏定位容器 */
+.dock-wrapper {
+  position: absolute;
+  bottom: 24px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+/* 高透玻璃 Dock 栏主体 */
+.glass-dock {
+  width: calc(100% - 40px);
+  max-width: 400px;
+  height: 84px;
+  padding: 0 16px;
+  border-radius: 30px;
+  
+  /* 渲染高透玻璃效果 */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inner-shadow);
+  
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
