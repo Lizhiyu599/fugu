@@ -29,12 +29,11 @@ html, body {
 .widgets-area {
   width: 100%;
   flex: 1;
-  /* 1. 顶部预留出充裕的状态栏+留白高度 (100px) */
-  padding-top: 100px;
-  /* 2. 左右保持标准边距，让 4 列小组件能够撑满屏幕宽度 */
+  /* 顶部预留高度往上提（50px），小组件整体向上移动 */
+  padding-top: 50px; 
   padding-left: 20px;
   padding-right: 20px;
-  padding-bottom: 110px; /* 底部给 Dock 栏留出空间 */
+  padding-bottom: 110px;
   
   display: flex;
   flex-direction: column;
