@@ -1,39 +1,40 @@
 /**
- * 桌面应用调度中心 (App Manager)
- * 后续所有新增加的软件都在此处统一注册与唤起
+ * 桌面应用调度中心 (AppManager)
+ * 负责统一掌控“进入应用”、“退出返回桌面”的生命周期
  */
 
 const AppManager = {
-  // 当前已注册的应用列表
+  currentAppId: null,
   apps: {},
 
   // 注册新应用
-  register(appId, appConfig) {
-    this.apps[appId] = appConfig;
+  register(appId, appInstance) {
+    this.apps[appId] = appInstance;
   },
 
-  // 唤起打开应用
-  open(appId) {
+  // 进入软件 View
+  launch(appId) {
     if (this.apps[appId] && typeof this.apps[appId].open === 'function') {
+      this.currentAppId = appId;
       this.apps[appId].open();
     } else {
       console.error(`应用 [${appId}] 未注册或无法打开`);
     }
   },
 
-  // 关闭应用
-  close(appId) {
-    if (this.apps[appId] && typeof this.apps[appId].close === 'function') {
-      this.apps[appId].close();
+  // 点击左上角箭头返回桌面
+  backToHome() {
+    if (this.currentAppId && this.apps[this.currentAppId]) {
+      this.apps[this.currentAppId].close();
+      this.currentAppId = null;
     }
   }
 };
 
-// 初始化桌面所有应用的点击监听
+// 页面加载完成后，注册已有的桌面应用
 document.addEventListener('DOMContentLoaded', () => {
-  // 注册【设置】应用
-  AppManager.register('settings', {
-    open: () => typeof SettingsApp !== 'undefined' && SettingsApp.open(),
-    close: () => typeof SettingsApp !== 'undefined' && SettingsApp.close()
-  });
+  // 注册“设置”软件
+  if (typeof SettingsApp !== 'undefined') {
+    AppManager.register('settings', SettingsApp);
+  }
 });
