@@ -252,3 +252,36 @@ const AuthManager = {
 document.addEventListener('DOMContentLoaded', () => {
   AuthManager.init();
 });
+
+/**
+ * 2. 页面加载时读取并恢复保存的头像
+ */
+function loadSavedAvatar() {
+  let savedAvatar = null;
+
+  // 优先读取当前登录账号的头像数据
+  if (window.AuthManager && AuthManager.currentUser) {
+    const userKey = `user_${AuthManager.currentUser.uid}_data`;
+    try {
+      const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
+      savedAvatar = userData.avatar;
+    } catch(e) {}
+  }
+
+  // 如果账号数据里没有，再读取公共存储区
+  if (!savedAvatar) {
+    savedAvatar = localStorage.getItem('french_desktop_avatar');
+  }
+
+  // 如果找到了保存的 Base64 头像，更新页面中所有的头像元素
+  if (savedAvatar) {
+    const avatarImgs = document.querySelectorAll('.user-avatar-img');
+    avatarImgs.forEach(img => img.src = savedAvatar);
+  }
+}
+
+// 页面 DOM 加载完毕后自动运行恢复
+document.addEventListener('DOMContentLoaded', () => {
+  // 稍作延迟确保用户 Auth 状态已载入
+  setTimeout(loadSavedAvatar, 50);
+});
