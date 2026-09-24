@@ -20,34 +20,40 @@
     <!-- 桌面小组件放置区 -->
     <div class="widgets-area" id="widgets-area">
       
-      <!-- 2x4 高透玻璃双头像小组件 -->
+      <!-- 2x4 高透玻璃双头像小组件（扁平加宽版） -->
       <div class="widget-2x4-avatars">
         
-        <!-- 左头像 -->
-        <div class="avatar-box" onclick="triggerAvatarUpload('left-avatar-input')">
-          <div class="avatar-frame">
-            <img id="avatar-left-img" class="avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop" alt="User Avatar">
+        <div class="avatars-group">
+          <!-- 左头像组 -->
+          <div class="avatar-box">
+            <div class="avatar-frame" onclick="triggerAvatarUpload('left-avatar-input')">
+              <!-- 空白占位 SVG 符号 -->
+              <svg id="left-placeholder" class="avatar-placeholder-icon" viewBox="0 0 24 24">
+                <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+              </svg>
+              <img id="avatar-left-img" class="avatar-img" src="" alt="User Avatar">
+            </div>
+            <!-- 可编辑名字（contenteditable允许直接点击编辑） -->
+            <span class="avatar-name" contenteditable="true" spellcheck="false">Moi</span>
+            <input type="file" id="left-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'avatar-left-img', 'left-placeholder')">
           </div>
-          <span class="avatar-label">Moi</span>
-          <!-- 隐藏的文件选择框 -->
-          <input type="file" id="left-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'avatar-left-img')">
-        </div>
 
-        <!-- 中间连接装饰 -->
-        <div class="avatar-divider">
-          <span class="line"></span>
-          <span>✦</span>
-          <span class="line"></span>
-        </div>
+          <!-- 中间紧凑分隔符 -->
+          <div class="avatar-divider-icon">✦</div>
 
-        <!-- 右头像 -->
-        <div class="avatar-box" onclick="triggerAvatarUpload('right-avatar-input')">
-          <div class="avatar-frame">
-            <img id="avatar-right-img" class="avatar-img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop" alt="AI Avatar">
+          <!-- 右头像组 -->
+          <div class="avatar-box">
+            <div class="avatar-frame" onclick="triggerAvatarUpload('right-avatar-input')">
+              <!-- 空白占位 SVG 符号 -->
+              <svg id="right-placeholder" class="avatar-placeholder-icon" viewBox="0 0 24 24">
+                <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+              </svg>
+              <img id="avatar-right-img" class="avatar-img" src="" alt="AI Avatar">
+            </div>
+            <!-- 可编辑名字 -->
+            <span class="avatar-name" contenteditable="true" spellcheck="false">Mon Amour</span>
+            <input type="file" id="right-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'avatar-right-img', 'right-placeholder')">
           </div>
-          <span class="avatar-label">Mon Amour</span>
-          <!-- 隐藏的文件选择框 -->
-          <input type="file" id="right-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'avatar-right-img')">
         </div>
 
       </div>
@@ -63,7 +69,6 @@
 
   </main>
 
-  <!-- JS 主逻辑文件 -->
   <script src="js/main.js"></script>
 </body>
 </html>
