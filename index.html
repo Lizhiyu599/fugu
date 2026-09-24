@@ -16,24 +16,24 @@
   <!-- 独立应用 CSS -->
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/embellir.css">
-
 </head>
 <body>
 
   <!-- 全屏桌面画布 -->
   <main class="desktop-container" id="desktop">
     
-    <!-- 桌面顶部常驻纯净信息栏（无分割线/无背景条） -->
+    <!-- 桌面顶部常驻纯净信息栏 -->
     <div class="top-info-bar" id="top-info-bar">
       <div class="top-info-left">
         <span class="info-time-text" id="info-time-text">00:00</span>
       </div>
       <div class="top-info-right">
         <div class="battery-wrapper">
-          <span id="info-battery-level" style="font-size: 11px;">100%</span>
+          <span class="battery-text" id="info-battery-level">100%</span>
           <svg class="battery-icon-svg" viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="1" y="1" width="19" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
-            <rect x="3" y="3" width="13" height="6" rx="1" fill="currentColor"/>
+            <!-- 动态绘制填充条（最大宽度 13.5px） -->
+            <rect id="info-battery-fill" x="3" y="3" width="13.5" height="6" rx="1" fill="currentColor"/>
             <path d="M22 4V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
@@ -67,9 +67,9 @@
     <!-- 底部 Dock 栏 -->
     <div class="dock-wrapper">
       <div class="glass-dock" id="main-dock">
-        <!-- Embellir 美化应用图标 -->
+        <!-- Embellir 美化应用图标（严格约束在 26px） -->
         <div class="dock-item" onclick="AppManager.launch('embellir')" title="Embellir">
-          <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="4"/>
             <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
             <path d="M21 15l-5-5L5 21"/>
@@ -79,7 +79,7 @@
 
         <!-- Réglages 设置应用图标 -->
         <div class="dock-item" onclick="AppManager.launch('settings')" title="Réglages / Outil">
-          <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"/>
             <path d="M19.4 15A1.65 1.65 0 0 0 20 12A1.65 1.65 0 0 0 19.4 9M4.6 9A1.65 1.65 0 0 0 4 12A1.65 1.65 0 0 0 4.6 15M15 19.4A1.65 1.65 0 0 0 12 20A1.65 1.65 0 0 0 9 19.4M9 4.6A1.65 1.65 0 0 0 15 4.6"/>
             <path d="M19.4 15L21 16.5M19.4 9L21 7.5M4.6 9L3 7.5M4.6 15L3 16.5M15 19.4L16.5 21M9 19.4L7.5 21M9 4.6L7.5 3M15 4.6L16.5 3"/>
