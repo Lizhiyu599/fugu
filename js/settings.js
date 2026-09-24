@@ -195,3 +195,14 @@ const SettingsApp = {
     }
   }
 };
+
+// 确保在 AppManager 加载完毕后将当前应用注册进去
+if (window.AppManager) {
+  AppManager.register('settings', SettingsApp);
+} else {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.AppManager) {
+      AppManager.register('settings', SettingsApp);
+    }
+  });
+}
