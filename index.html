@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>French Retro Desktop</title>
 
-  <!-- 全局样式 -->
+  <!-- 全局通用样式 -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
 
-  <!-- 独立应用 CSS（后续增加新应用只需引入对应的 CSS 文件） -->
+  <!-- 独立应用 CSS 列表（每增加一个应用，在此处追加对应的 css 文件） -->
   <link rel="stylesheet" href="css/settings-app.css">
 </head>
 <body>
@@ -45,7 +45,7 @@
     <!-- 底部 Dock 栏 -->
     <div class="dock-wrapper">
       <div class="glass-dock" id="main-dock">
-        <!-- 点击“设置”图标，通过 AppManager 启动软件并进入该软件全屏 View -->
+        <!-- 点击“设置”图标，通过 AppManager 唤起全屏独立设置软件 View -->
         <div class="dock-item" onclick="AppManager.launch('settings')" title="Réglages / 设置">
           <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -59,11 +59,14 @@
 
   </main>
 
-  <!-- 基础与调度脚本 -->
+  <!-- 1. 全局基础逻辑脚本 -->
   <script src="js/main.js"></script>
+
+  <!-- 2. 全局应用调度中心（必须优先于具体应用加载） -->
   <script src="js/apps.js"></script>
 
-  <!-- 独立应用脚本（后续新增应用只需在下方添加脚本文件） -->
+  <!-- 3. 独立应用 JS 列表（以后每新增一个应用，都在此追加对应的 js 文件） -->
   <script src="js/settings-app.js"></script>
+
 </body>
 </html>
