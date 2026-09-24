@@ -1,112 +1,105 @@
 /* ==========================================
-   设置软件 (Réglages) - 独立美化样式表
+   设置软件 (Réglages) - 全屏独立应用样式
    ========================================== */
 
-/* 设置软件全屏遮罩 */
-.settings-modal-overlay {
-  position: fixed;
+.app-view-settings {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 100;
+  z-index: 50;
+  background: var(--bg-wallpaper);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  padding: 50px 20px 20px 20px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.96);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.app-view-settings.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+/* 独立软件的顶部导航栏 */
+.app-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  margin-bottom: 20px;
+}
+
+.app-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--glass-border);
+  color: var(--text-main);
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
+  cursor: pointer;
+  box-shadow: var(--glass-shadow);
 }
 
-.settings-modal-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
+.app-back-btn:active {
+  transform: scale(0.92);
 }
 
-/* 设置软件高透玻璃卡片 */
-.settings-glass-card {
-  width: 90%;
-  max-width: 380px;
-  max-height: 82vh;
+.app-page-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-page-title .en {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.app-page-title .cn {
+  font-size: 11px;
+  opacity: 0.7;
+  color: var(--text-main);
+}
+
+/* 设置主面板高透卡片 */
+.settings-panel {
+  flex: 1;
   border-radius: 28px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 0.5px solid var(--glass-border);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transform: translateY(20px);
-  transition: transform 0.25s ease;
-}
-
-.settings-modal-overlay.active .settings-glass-card {
-  transform: translateY(0);
-}
-
-/* 顶部标题栏 */
-.settings-header {
-  padding: 18px 20px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
-}
-
-.settings-title-group {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.settings-title-en {
-  font-family: Georgia, serif;
-  font-style: italic;
-  font-size: 18px;
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.settings-title-cn {
-  font-size: 12px;
-  opacity: 0.7;
-  color: var(--text-main);
-}
-
-.settings-close-btn {
-  background: none;
-  border: none;
-  font-size: 22px;
-  color: var(--text-main);
-  opacity: 0.6;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.settings-close-btn:hover {
-  opacity: 1;
-}
-
-/* 主体内容区 */
-.settings-body {
-  padding: 16px 20px;
+  box-shadow: var(--glass-shadow);
+  padding: 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-.settings-section {
+.settings-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.settings-section-title {
+.settings-group-title {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-main);
@@ -115,105 +108,76 @@
   text-transform: uppercase;
 }
 
-.settings-item {
+.settings-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.settings-item label {
+.settings-field label {
   font-size: 12px;
   color: var(--text-main);
   opacity: 0.85;
 }
 
-.settings-item input[type="text"],
-.settings-item input[type="password"] {
+.settings-field input[type="text"],
+.settings-field input[type="password"] {
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 12px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
   border: 0.5px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.15);
   color: var(--text-main);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
 }
 
-.settings-item input:focus {
+.settings-field input:focus {
   border-color: rgba(255, 255, 255, 0.7);
   background: rgba(255, 255, 255, 0.25);
 }
 
-.settings-input-group {
+.input-row {
   display: flex;
   gap: 8px;
 }
 
-.settings-input-group input {
+.input-row input {
   flex: 1;
 }
 
-/* 设置软件专用高透按钮 */
-.settings-btn {
-  height: 38px;
+/* 高透通用按钮 */
+.st-btn {
+  height: 42px;
   padding: 0 16px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 0.5px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.12);
   color: var(--text-main);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 
-.settings-btn:hover {
+.st-btn:active {
+  transform: scale(0.98);
+}
+
+.st-btn.primary {
   background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
 }
 
-.settings-btn.primary {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.5);
-  width: 100%;
-}
-
-.settings-btn.danger {
-  width: 100%;
-  background: rgba(220, 53, 69, 0.15);
+.st-btn.danger {
+  background: rgba(220, 53, 69, 0.18);
   border-color: rgba(220, 53, 69, 0.4);
   color: #ff6b6b;
 }
 
-.settings-btn.danger:hover {
-  background: rgba(220, 53, 69, 0.3);
-}
-
-.settings-btn-sm {
-  padding: 0 10px;
-  height: 38px;
-  border-radius: 12px;
-  border: 0.5px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text-main);
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.settings-grid-2 {
+.st-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-}
-
-/* 底部固定保存栏 */
-.settings-footer {
-  padding: 12px 20px 16px;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.15);
-}
-
-.settings-save-btn {
-  width: 100%;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.6);
 }
