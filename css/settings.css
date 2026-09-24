@@ -181,3 +181,11 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+/* 应用返回按钮中的图片样式 */
+.app-back-btn .app-back-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
