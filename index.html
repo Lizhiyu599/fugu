@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>French Retro Desktop</title>
 
-  <!-- 1. 优先引入全局变量（配色与材质参数） -->
+  <!-- 1. 全局变量 -->
   <link rel="stylesheet" href="css/variables.css">
-  
-  <!-- 2. 引入基础全屏布局与壁纸样式 -->
+  <!-- 2. 基础布局与壁纸 -->
   <link rel="stylesheet" href="css/base.css">
-  
-  <!-- 3. 引入 UI 组件（透明玻璃 Dock 栏等）样式 -->
+  <!-- 3. UI 组件样式 -->
   <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
@@ -19,21 +17,53 @@
   <!-- 全屏桌面画布 -->
   <main class="desktop-container" id="desktop">
     
-    <!-- 桌面小组件放置区（未来在这里放入各种玻璃小组件） -->
+    <!-- 桌面小组件放置区 -->
     <div class="widgets-area" id="widgets-area">
-      <!-- 小组件后续一步步往这里添 -->
+      
+      <!-- 2x4 高透玻璃双头像小组件 -->
+      <div class="widget-2x4-avatars">
+        
+        <!-- 左头像 -->
+        <div class="avatar-box" onclick="triggerAvatarUpload('left-avatar-input')">
+          <div class="avatar-frame">
+            <img id="avatar-left-img" class="avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop" alt="User Avatar">
+          </div>
+          <span class="avatar-label">Moi</span>
+          <!-- 隐藏的文件选择框 -->
+          <input type="file" id="left-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'avatar-left-img')">
+        </div>
+
+        <!-- 中间连接装饰 -->
+        <div class="avatar-divider">
+          <span class="line"></span>
+          <span>✦</span>
+          <span class="line"></span>
+        </div>
+
+        <!-- 右头像 -->
+        <div class="avatar-box" onclick="triggerAvatarUpload('right-avatar-input')">
+          <div class="avatar-frame">
+            <img id="avatar-right-img" class="avatar-img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop" alt="AI Avatar">
+          </div>
+          <span class="avatar-label">Mon Amour</span>
+          <!-- 隐藏的文件选择框 -->
+          <input type="file" id="right-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'avatar-right-img')">
+        </div>
+
+      </div>
+
     </div>
 
     <!-- 底层固定结构：高透玻璃 Dock 栏 -->
     <div class="dock-wrapper">
       <div class="glass-dock" id="main-dock">
-        <!-- 预留 App 图标存放位置 -->
+        <!-- 预留 App 图标 -->
       </div>
     </div>
 
   </main>
 
-  <!-- JS 主逻辑入口（预留） -->
+  <!-- JS 主逻辑文件 -->
   <script src="js/main.js"></script>
 </body>
 </html>
