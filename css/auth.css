@@ -77,14 +77,14 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* 焦点虚框/黑框样式（去除紫色） */
+/* 点击输入时的黑色虚框/实框高亮（完全无紫色） */
 .auth-field input:focus {
   border-color: #000000 !important;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15) !important;
   background: #ffffff;
 }
 
-/* 提交通用按钮：增宽拉大，防止挤压 */
+/* 提交通用按钮：拉大加宽，解决字体挤压 */
 .auth-submit-btn {
   width: 100%;
   height: 46px;
@@ -122,26 +122,28 @@
   margin-top: 4px;
 }
 
-/* 将文字颜色改成黑色，取消紫色 */
+/* 黑色文字，完全去除下划线 */
 .auth-toggle-box a {
   color: #000000 !important;
-  text-decoration: underline;
+  text-decoration: none !important;
   font-weight: 600;
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
 
 .auth-toggle-box a:hover {
-  color: #333333 !important;
+  opacity: 0.6; /* Hover 时使用透明度变化反馈，高级且无下划线 */
 }
 
+/* 忘记密码链接，黑色无下划线 */
 .forgot-pwd-link {
   font-size: 12px;
   color: #666;
-  text-decoration: none;
+  text-decoration: none !important;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .forgot-pwd-link:hover {
   color: #000;
-  text-decoration: underline;
 }
