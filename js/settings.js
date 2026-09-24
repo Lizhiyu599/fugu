@@ -1,6 +1,6 @@
 /**
  * “设置”软件独立模块 (SettingsApp)
- * 支持 3 套 API 预设管理（合并预设与模型名称），优化保存按钮布局与 Toast 集成
+ * 仅处理 3 套 API 预设管理与数据备份/出厂重置
  */
 
 const SettingsApp = {
@@ -51,7 +51,7 @@ const SettingsApp = {
               </div>
             </div>
 
-            <!-- 统一后的：预设 / 模型名称 -->
+            <!-- 预设 / 模型名称 -->
             <div class="settings-field">
               <label for="set-slot-name">预设 / 模型名称 (Model Name)</label>
               <input type="text" id="set-slot-name" placeholder="如：gpt-4o / deepseek-chat" oninput="SettingsApp.handleNameInput(this.value)">
@@ -115,7 +115,7 @@ const SettingsApp = {
     if (input) input.type = input.type === 'password' ? 'text' : 'password';
   },
 
-  // 刷新下拉菜单的选项（使用统一后的模型/预设名称）
+  // 刷新下拉菜单的选项
   renderSelectOptions() {
     const selectEl = document.getElementById('set-api-slot-select');
     if (!selectEl) return;
@@ -128,13 +128,11 @@ const SettingsApp = {
     selectEl.value = this.activeSlot;
   },
 
-  // 实时同步输入框名称到下拉选项
   handleNameInput(val) {
     this.apiSlots[this.activeSlot].name = val.trim() || `配置 ${this.activeSlot}`;
     this.renderSelectOptions();
   },
 
-  // 切换槽位
   switchSlot(newSlot) {
     this.saveCurrentInputsToSlot(this.activeSlot);
     this.activeSlot = parseInt(newSlot);
@@ -157,7 +155,7 @@ const SettingsApp = {
     this.renderSelectOptions();
   },
 
-  // 保存全部 API 配置
+  // 保存 API 配置
   saveSettings() {
     this.saveCurrentInputsToSlot(this.activeSlot);
 
@@ -166,7 +164,7 @@ const SettingsApp = {
       slots: this.apiSlots,
       apiKey: this.apiSlots[this.activeSlot].apiKey,
       apiUrl: this.apiSlots[this.activeSlot].apiUrl,
-      apiModel: this.apiSlots[this.activeSlot].name // 使用统一的模型名称
+      apiModel: this.apiSlots[this.activeSlot].name
     };
 
     localStorage.setItem('french_desktop_settings', JSON.stringify(fullConfig));
@@ -176,9 +174,9 @@ const SettingsApp = {
     }
 
     if (window.Toast) {
-      Toast.show({ message: 'API 配置已成功保存', type: 'success', duration: 2000 });
+      Toast.show({ message: 'API 配置已保存', type: 'success', duration: 2000 });
     } else {
-      alert('API 配置已成功保存！');
+      alert('API 配置已保存！');
     }
   },
 
@@ -329,36 +327,3 @@ if (window.AppManager) {
     }
   });
 }
-
-/**
- * 1. 头像上传与 Base64 本地化存储函数
- */
-SettingsApp.handleAvatarUpload = function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  // 使用 FileReader 将图片文件转换为 Base64 编码字符串
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64Avatar = e.target.result; // 获取到的 Base64 文本数据
-
-    // 1. 实时更新页面上所有头像 <img> 标签的显示
-    const avatarImgs = document.querySelectorAll('.user-avatar-img');
-    avatarImgs.forEach(img => img.src = base64Avatar);
-
-    // 2. 存入公共缓存
-    localStorage.setItem('french_desktop_avatar', base64Avatar);
-
-    // 3. 同步保存到当前登录用户的数据空间中（只要不手动退出登录，刷新后依然存在）
-    if (window.AuthManager && AuthManager.currentUser) {
-      AuthManager.saveUserData('avatar', base64Avatar);
-    }
-
-    // 弹出成功提示
-    if (window.Toast) {
-      Toast.show({ message: '头像已保存', type: 'success', duration: 2000 });
-    }
-  };
-
-  reader.readAsDataURL(file);
-};
