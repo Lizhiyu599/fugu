@@ -1,6 +1,6 @@
 /**
  * “设置”软件独立模块 (SettingsApp)
- * HTML 完全由 JS 动态生成注入，主文件零污染
+ * 适配最新图片返回按键、去除中文子标题、稳定导出备份
  */
 
 const SettingsApp = {
@@ -9,18 +9,19 @@ const SettingsApp = {
 
   // 1. 初始化并注入应用 HTML DOM 结构
   render() {
-    if (this.containerEl) return; // 避免重复注入
+    if (this.containerEl) return;
 
     const appHTML = `
       <div class="app-view-settings" id="app-view-settings">
         <!-- 顶部返回导航栏 -->
         <div class="app-nav-bar">
-          <button class="app-back-btn" onclick="AppManager.backToHome()" title="返回桌面">←</button>
+          <button class="app-back-btn" onclick="AppManager.backToHome()" title="Retour">
+            <img src="https://i.ibb.co/Kc8JLNTX/1782649743993.png" class="app-back-img" alt="Back">
+          </button>
           <div class="app-page-title">
             <span class="en">Réglages</span>
-            <span class="cn">系统设置</span>
           </div>
-          <div style="width: 40px;"></div> <!-- 占位保持标题居中 -->
+          <div style="width: 40px;"></div>
         </div>
 
         <!-- 设置面板主体 -->
@@ -154,20 +155,33 @@ const SettingsApp = {
     }
   },
 
+  // 修复导出功能：采用 Blob 生成真实可下载文件流
   exportData() {
-    const backupData = {
-      version: '1.0',
-      exportTime: new Date().toISOString(),
-      settings: JSON.parse(localStorage.getItem('french_desktop_settings') || '{}')
-    };
+    try {
+      const settingsData = JSON.parse(localStorage.getItem('french_desktop_settings') || '{}');
+      const backupData = {
+        version: '1.0',
+        exportTime: new Date().toLocaleString(),
+        settings: settingsData
+      };
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `FrenchDesktop_Backup_${Date.now()}.json`);
-    document.body.appendChild(dlAnchor);
-    dlAnchor.click();
-    dlAnchor.remove();
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FrenchDesktop_Backup_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    } catch (e) {
+      alert('导出备份失败：' + e.message);
+    }
   },
 
   triggerImport() {
