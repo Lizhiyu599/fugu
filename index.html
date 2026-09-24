@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Retro Glass Desktop</title>
-  
-  <!-- 引入模块化样式文件 -->
+  <title>French Retro Desktop</title>
+
+  <!-- 1. 优先引入全局变量（配色与材质参数） -->
   <link rel="stylesheet" href="css/variables.css">
+  
+  <!-- 2. 引入基础全屏布局与壁纸样式 -->
   <link rel="stylesheet" href="css/base.css">
+  
+  <!-- 3. 引入 UI 组件（透明玻璃 Dock 栏等）样式 -->
   <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
@@ -15,21 +19,21 @@
   <!-- 全屏桌面画布 -->
   <main class="desktop-container" id="desktop">
     
-    <!-- 顶部/中间区域预留给后续的大量高透玻璃小组件 -->
+    <!-- 桌面小组件放置区（未来在这里放入各种玻璃小组件） -->
     <div class="widgets-area" id="widgets-area">
-      <!-- 后面我们在这里一步步添加各种精美小组件 -->
+      <!-- 小组件后续一步步往这里添 -->
     </div>
 
     <!-- 底层固定结构：高透玻璃 Dock 栏 -->
     <div class="dock-wrapper">
       <div class="glass-dock" id="main-dock">
-        <!-- 预留给后续的 App 图标（如：酒馆、人设、设置等） -->
+        <!-- 预留 App 图标存放位置 -->
       </div>
     </div>
 
   </main>
 
-  <!-- 入口脚本 -->
+  <!-- JS 主逻辑入口（预留） -->
   <script src="js/main.js"></script>
 </body>
 </html>
