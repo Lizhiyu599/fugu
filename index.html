@@ -5,26 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>French Retro Desktop</title>
 
-  <!-- 1. 全局变量 -->
+  <!-- 全局与基础样式 -->
   <link rel="stylesheet" href="css/variables.css">
-  <!-- 2. 基础布局与壁纸 -->
   <link rel="stylesheet" href="css/base.css">
-  <!-- 3. UI 组件样式 -->
   <link rel="stylesheet" href="css/components.css">
+
+  <!-- 独立软件模块 CSS -->
+  <link rel="stylesheet" href="css/settings-app.css">
 </head>
 <body>
 
   <!-- 全屏桌面画布 -->
   <main class="desktop-container" id="desktop">
     
-    <!-- 桌面小组件放置区 -->
+    <!-- 桌面 4x6 网格区 -->
     <div class="widgets-area" id="widgets-area">
-      
       <!-- 2x4 高透玻璃双头像小组件 -->
       <div class="widget-2x4-avatars">
-        
         <div class="avatars-group">
-          <!-- 左头像 -->
           <div class="avatar-box">
             <div class="avatar-frame" id="left-avatar-frame" onclick="triggerAvatarUpload('left-avatar-input')">
               <span class="avatar-plus" id="left-plus">+</span>
@@ -33,7 +31,6 @@
             <input type="file" id="left-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'left-avatar-frame', 'left-plus')">
           </div>
 
-          <!-- 右头像（删掉了中间的分隔符号，紧挨着） -->
           <div class="avatar-box">
             <div class="avatar-frame" id="right-avatar-frame" onclick="triggerAvatarUpload('right-avatar-input')">
               <span class="avatar-plus" id="right-plus">+</span>
@@ -42,20 +39,83 @@
             <input type="file" id="right-avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarChange(event, 'right-avatar-frame', 'right-plus')">
           </div>
         </div>
-
       </div>
-
     </div>
 
-    <!-- 底层固定结构：较窄的高透玻璃 Dock 栏 -->
+    <!-- 底部 Dock 栏 -->
     <div class="dock-wrapper">
       <div class="glass-dock" id="main-dock">
-        <!-- 预留 App 图标存放位置 -->
+        <!-- “设置”应用图标（点击通过 AppManager 唤起） -->
+        <div class="dock-item" onclick="AppManager.open('settings')" title="Réglages / 设置">
+          <svg class="dock-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15A1.65 1.65 0 0 0 20 12A1.65 1.65 0 0 0 19.4 9M4.6 9A1.65 1.65 0 0 0 4 12A1.65 1.65 0 0 0 4.6 15M15 19.4A1.65 1.65 0 0 0 12 20A1.65 1.65 0 0 0 9 19.4M9 4.6A1.65 1.65 0 0 0 12 4A1.65 1.65 0 0 0 15 4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15L21 16.5M19.4 9L21 7.5M4.6 9L3 7.5M4.6 15L3 16.5M15 19.4L16.5 21M9 19.4L7.5 21M9 4.6L7.5 3M15 4.6L16.5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="dock-label">设置</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- “设置”应用 UI 弹窗 -->
+    <div class="settings-modal-overlay" id="settings-app-modal" onclick="SettingsApp.close()">
+      <div class="settings-glass-card" onclick="event.stopPropagation()">
+        
+        <div class="settings-header">
+          <div class="settings-title-group">
+            <span class="settings-title-en">Réglages</span>
+            <span class="settings-title-cn">系统设置</span>
+          </div>
+          <button class="settings-close-btn" onclick="SettingsApp.close()">×</button>
+        </div>
+
+        <div class="settings-body">
+          <!-- API 配置 -->
+          <div class="settings-section">
+            <div class="settings-section-title">API 接口配置</div>
+            <div class="settings-item">
+              <label for="set-api-key">API Key</label>
+              <div class="settings-input-group">
+                <input type="password" id="set-api-key" placeholder="sk-..." autocomplete="off">
+                <button type="button" class="settings-btn-sm" onclick="SettingsApp.togglePasswordVisibility('set-api-key')">显示</button>
+              </div>
+            </div>
+            <div class="settings-item">
+              <label for="set-api-url">API Base URL</label>
+              <input type="text" id="set-api-url" placeholder="https://api.openai.com/v1">
+            </div>
+            <div class="settings-item">
+              <label for="set-api-model">默认 Model 名称</label>
+              <input type="text" id="set-api-model" placeholder="gpt-4o / deepseek-chat">
+            </div>
+            <button class="settings-btn primary" onclick="SettingsApp.testApiConnection()">测试 API 连通性</button>
+          </div>
+
+          <!-- 数据管理 -->
+          <div class="settings-section">
+            <div class="settings-section-title">数据管理</div>
+            <div class="settings-grid-2">
+              <button class="settings-btn" onclick="SettingsApp.exportData()">导出数据备份</button>
+              <button class="settings-btn" onclick="SettingsApp.triggerImport()">导入数据备份</button>
+              <input type="file" id="set-import-file" accept=".json" style="display: none;" onchange="SettingsApp.importData(event)">
+            </div>
+            <button class="settings-btn danger" onclick="SettingsApp.resetAll()">恢复出厂默认</button>
+          </div>
+        </div>
+
+        <div class="settings-footer">
+          <button class="settings-btn settings-save-btn" onclick="SettingsApp.saveSettings()">保存配置</button>
+        </div>
+
       </div>
     </div>
 
   </main>
 
+  <!-- 基础与调度 JS -->
   <script src="js/main.js"></script>
+  <script src="js/apps.js"></script>
+  <!-- 独立应用 JS -->
+  <script src="js/settings-app.js"></script>
 </body>
 </html>
