@@ -5,7 +5,6 @@ const AuthManager = {
   currentUser: null,
 
   // ⚠️【授权白名单】允许注册的 UID 列表（最多11位数字）
-  // 当有新用户需要注册时，请在这里加入他的 UID
   allowedUIDs: [
     '2608489391',
     '12345678901'
@@ -18,12 +17,12 @@ const AuthManager = {
   init() {
     this.renderAuthModal();
     const savedUser = localStorage.getItem('french_desktop_current_user');
-    
+
     if (savedUser) {
       try {
         this.currentUser = JSON.parse(savedUser);
         this.applyUserData();
-      } catch(e) {
+      } catch (e) {
         this.showAuthModal();
       }
     } else {
@@ -169,7 +168,7 @@ const AuthManager = {
 
       usersStore[uid] = newUser;
       localStorage.setItem('french_desktop_users_db', JSON.stringify(usersStore));
-      
+
       this.setCurrentUser(newUser);
       alert('注册成功！欢迎使用。');
     } else {
@@ -219,9 +218,15 @@ const AuthManager = {
     this.currentUser = user;
     localStorage.setItem('french_desktop_current_user', JSON.stringify(user));
     this.applyUserData();
+
+    // 🌟 登录/注册完成后，主动触发一次小组件数据恢复
+    // （因为 initProfilePersistence 首次执行时 currentUser 可能还是 null）
+    if (typeof initProfilePersistence === 'function') {
+      initProfilePersistence();
+    }
   },
 
-  // 渲染并应用用户绑定的数据（API配置、头像、名字）
+  // 渲染并应用用户绑定的数据（API配置、双头像、双名字）
   applyUserData() {
     if (!this.currentUser) return;
     const userKey = `user_${this.currentUser.uid}_data`;
@@ -235,25 +240,41 @@ const AuthManager = {
       }
     }
 
-    // 2. 加载用户头像
-    const userAvatar = userData.avatar || localStorage.getItem('widget_user_avatar');
-    if (userAvatar) {
-      const avatarImgs = document.querySelectorAll('#user-avatar-img, .user-avatar-img');
-      avatarImgs.forEach(img => img.src = userAvatar);
-    }
+    // 2. 加载双头像：key 与 handleAvatarChange 保存时保持一致
+    ['left-avatar-frame', 'right-avatar-frame'].forEach((frameId) => {
+      const avatarKey = `widget_avatar_${frameId}`;
+      const saved = userData[avatarKey];
+      if (!saved) return;
 
-    // 3. 加载用户名字
-    const userName = userData.name || userData.nickname || this.currentUser.nickname || localStorage.getItem('widget_user_name');
-    if (userName) {
-      const nameEl = document.getElementById('user-name-text');
-      if (nameEl) {
-        if (nameEl.tagName === 'INPUT') {
-          nameEl.value = userName;
-        } else {
-          nameEl.innerText = userName;
-        }
-      }
-    }
+      const frame = document.getElementById(frameId);
+      if (!frame) return;
+
+      frame.style.backgroundImage = `url('${saved}')`;
+      frame.style.backgroundSize = 'cover';
+      frame.style.backgroundPosition = 'center';
+
+      const plus = frame.querySelector('.avatar-plus');
+      if (plus) plus.style.display = 'none';
+
+      // 回写公共存储，作为未登录状态下的兜底
+      localStorage.setItem(avatarKey, saved);
+    });
+
+    // 3. 加载双名字：key 与名字 blur 保存时保持一致
+    document.querySelectorAll('.avatar-name').forEach((nameEl) => {
+      const box = nameEl.closest('.avatar-box');
+      const frame = box?.querySelector('.avatar-frame');
+      const frameId = frame?.id;
+      if (!frameId) return;
+
+      const nameKey = `widget_name_${frameId}`;
+      const savedName = userData[nameKey];
+      if (savedName === undefined) return;
+
+      nameEl.textContent = savedName;
+      // 回写公共存储
+      localStorage.setItem(nameKey, savedName);
+    });
   },
 
   // 保存当前用户的专项数据
@@ -266,7 +287,15 @@ const AuthManager = {
   },
 
   logout() {
+    // 清掉当前登录状态
     localStorage.removeItem('french_desktop_current_user');
+
+    // 清掉公共存储里的头像/名字，避免下一个账号登进来时看到上一个账号的数据
+    ['left-avatar-frame', 'right-avatar-frame'].forEach((frameId) => {
+      localStorage.removeItem(`widget_avatar_${frameId}`);
+      localStorage.removeItem(`widget_name_${frameId}`);
+    });
+
     location.reload();
   }
 };
