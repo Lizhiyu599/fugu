@@ -4,7 +4,18 @@
 const AuthManager = {
   currentUser: null,
 
-  // 1. 系统初始化检查
+  // ⚠️【授权白名单】允许注册的 UID 列表（最多11位数字）
+  // 当有新用户需要注册时，请在这里加入他的 UID
+  allowedUIDs: [
+    '10000000001',
+    '88888888',
+    '12345678901'
+  ],
+
+  // ⚠️ 超级管理员密码（用于帮用户重置密码）
+  adminSecret: 'admin123',
+
+  // 1. 初始化检查
   init() {
     this.renderAuthModal();
     const savedUser = localStorage.getItem('french_desktop_current_user');
@@ -21,7 +32,7 @@ const AuthManager = {
     }
   },
 
-  // 2. 动态注入注册/登录模态框 DOM
+  // 2. 注入 Modal 结构
   renderAuthModal() {
     if (document.getElementById('auth-modal-overlay')) return;
 
@@ -34,27 +45,43 @@ const AuthManager = {
           </div>
 
           <form id="auth-form" onsubmit="AuthManager.handleSubmit(event)">
+            <!-- 昵称 -->
             <div class="auth-field" id="field-nickname">
               <label>昵称 / Nom</label>
-              <input type="text" id="auth-nickname" placeholder="例如：黎魚" required>
+              <input type="text" id="auth-nickname" placeholder="例如：用户" required>
             </div>
 
+            <!-- UID 输入框（限制11位数字） -->
             <div class="auth-field">
-              <label>账号 / Identifiant</label>
-              <input type="text" id="auth-username" placeholder="请输入用户名" required autocomplete="username">
+              <label id="label-uid">账号 UID (数字)</label>
+              <input 
+                type="text" 
+                id="auth-uid" 
+                placeholder="请输入您的 11 位以内授权 UID" 
+                maxlength="11"
+                pattern="[0-9]*"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                required 
+                autocomplete="username"
+              >
             </div>
 
+            <!-- 密码 -->
             <div class="auth-field">
               <label>密码 / Mot de passe</label>
               <input type="password" id="auth-password" placeholder="请输入密码" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="auth-submit-btn" id="auth-submit-btn">注册并开始使用</button>
+            <!-- 提交通用按钮 -->
+            <button type="submit" class="auth-submit-btn" id="auth-submit-btn">注册</button>
           </form>
 
           <div class="auth-toggle-box">
-            <span id="auth-toggle-text">已有账号？</span>
-            <a href="javascript:void(0)" onclick="AuthManager.toggleMode()" id="auth-toggle-link">立即登录</a>
+            <div>
+              <span id="auth-toggle-text">已有账号？</span>
+              <a href="javascript:void(0)" onclick="AuthManager.toggleMode()" id="auth-toggle-link">立即登录</a>
+            </div>
+            <a href="javascript:void(0)" class="forgot-pwd-link" id="forgot-pwd-btn" style="display:none;" onclick="AuthManager.handleForgotPassword()">忘记密码？</a>
           </div>
         </div>
       </div>
@@ -74,25 +101,30 @@ const AuthManager = {
     const submitBtn = document.getElementById('auth-submit-btn');
     const toggleText = document.getElementById('auth-toggle-text');
     const toggleLink = document.getElementById('auth-toggle-link');
+    const forgotBtn = document.getElementById('forgot-pwd-btn');
+    const uidInput = document.getElementById('auth-uid');
 
     if (this.isRegisterMode) {
-      nicknameField.style.display = 'block';
+      nicknameField.style.display = 'flex';
       nicknameInput.required = true;
       subtitle.innerText = '请创建您的本地专属账号';
-      submitBtn.innerText = '注册并开始使用';
+      submitBtn.innerText = '注册';
       toggleText.innerText = '已有账号？';
       toggleLink.innerText = '立即登录';
+      forgotBtn.style.display = 'none';
+      uidInput.placeholder = '请输入您的 11 位以内授权 UID';
     } else {
       nicknameField.style.display = 'none';
       nicknameInput.required = false;
       subtitle.innerText = '请登录您的账号';
       submitBtn.innerText = '登录';
       toggleText.innerText = '首次使用？';
-      toggleLink.innerText = '创建新账号';
+      toggleLink.innerText = '注册账号';
+      forgotBtn.style.display = 'inline';
+      uidInput.placeholder = '请输入 UID';
     }
   },
 
-  // 4. 显示/隐藏 弹窗
   showAuthModal() {
     const modal = document.getElementById('auth-modal-overlay');
     if (modal) modal.classList.add('active');
@@ -103,39 +135,49 @@ const AuthManager = {
     if (modal) modal.classList.remove('active');
   },
 
-  // 5. 提交处理（注册 / 登录）
+  // 4. 表单提交（注册与登录校验）
   handleSubmit(event) {
     event.preventDefault();
-    const username = document.getElementById('auth-username').value.trim();
+    const uid = document.getElementById('auth-uid').value.trim();
     const password = document.getElementById('auth-password').value.trim();
     const nickname = document.getElementById('auth-nickname').value.trim();
+
+    if (!uid) return alert('请输入 UID！');
 
     const usersStore = JSON.parse(localStorage.getItem('french_desktop_users_db') || '{}');
 
     if (this.isRegisterMode) {
-      // 注册逻辑
-      if (usersStore[username]) {
-        alert('该用户名已被注册，请直接登录！');
+      // 校验 1：是否在管理员授权白名单中
+      if (!this.allowedUIDs.includes(uid)) {
+        alert(`UID [${uid}] 未获授权注册！\n请联系管理员录入您的 UID 后再试。`);
+        return;
+      }
+
+      // 校验 2：是否已经被注册
+      if (usersStore[uid]) {
+        alert(`UID [${uid}] 已经被注册过，请直接登录！`);
+        this.toggleMode();
         return;
       }
 
       const newUser = {
-        username: username,
-        password: password, // 本地演示直接存储，生产环境建议 Hash
-        nickname: nickname || username,
+        uid: uid,
+        username: uid,
+        password: password,
+        nickname: nickname || '用户',
         createdAt: new Date().toISOString()
       };
 
-      usersStore[username] = newUser;
+      usersStore[uid] = newUser;
       localStorage.setItem('french_desktop_users_db', JSON.stringify(usersStore));
       
       this.setCurrentUser(newUser);
-      alert('注册成功！欢迎进入。');
+      alert('注册成功！欢迎使用。');
     } else {
-      // 登录逻辑
-      const user = usersStore[username];
+      // 登录模式
+      const user = usersStore[uid];
       if (!user || user.password !== password) {
-        alert('账号或密码错误！');
+        alert('UID 或密码错误！');
         return;
       }
 
@@ -145,48 +187,69 @@ const AuthManager = {
     this.hideAuthModal();
   },
 
-  // 6. 设置当前登录用户并广播加载数据
+  // 5. 忘记密码重置通道（管理员模式）
+  handleForgotPassword() {
+    const uid = prompt('请输入您需要找回密码的 UID：');
+    if (!uid) return;
+
+    const usersStore = JSON.parse(localStorage.getItem('french_desktop_users_db') || '{}');
+    if (!usersStore[uid]) {
+      alert('未找到该 UID 对应的账户记录！');
+      return;
+    }
+
+    const adminKey = prompt('为了安全，请输入【管理员重置密钥】：\n（提示：初始密钥为 admin123）');
+    if (adminKey !== this.adminSecret) {
+      alert('密钥校验失败，无法重置密码！');
+      return;
+    }
+
+    const newPwd = prompt(`验证成功！请输入 UID [${uid}] 的新密码：`);
+    if (!newPwd || !newPwd.trim()) {
+      alert('密码不能为空！');
+      return;
+    }
+
+    usersStore[uid].password = newPwd.trim();
+    localStorage.setItem('french_desktop_users_db', JSON.stringify(usersStore));
+    alert(`UID [${uid}] 的密码已成功修改为新密码！现在可以使用新密码登录了。`);
+  },
+
+  // 6. 设为当前登录用户并加载其数据
   setCurrentUser(user) {
     this.currentUser = user;
     localStorage.setItem('french_desktop_current_user', JSON.stringify(user));
     this.applyUserData();
   },
 
-  // 7. 载入并应用当前账号专有数据
   applyUserData() {
     if (!this.currentUser) return;
-    const userKey = `user_${this.currentUser.username}_data`;
+    const userKey = `user_${this.currentUser.uid}_data`;
     const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
 
-    // 加载设置应用配置
     if (userData.settings) {
       localStorage.setItem('french_desktop_settings', JSON.stringify(userData.settings));
       if (window.SettingsApp && typeof SettingsApp.loadSettings === 'function') {
         SettingsApp.loadSettings();
       }
     }
-
-    // 触发桌面数据加载事件（如有需要扩展）
-    console.log(`已成功载入用户 [${this.currentUser.nickname}] 的个人数据`);
   },
 
-  // 8. 实时保存当前用户数据的方法（供其他模块调用）
   saveUserData(categoryKey, data) {
     if (!this.currentUser) return;
-    const userKey = `user_${this.currentUser.username}_data`;
+    const userKey = `user_${this.currentUser.uid}_data`;
     const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
     userData[categoryKey] = data;
     localStorage.setItem(userKey, JSON.stringify(userData));
   },
 
-  // 9. 退出登录
   logout() {
     localStorage.removeItem('french_desktop_current_user');
     location.reload();
   }
 };
 
-// 页面加载完成后启动账号检查
+// 启动执行
 document.addEventListener('DOMContentLoaded', () => {
   AuthManager.init();
 });
