@@ -1,6 +1,6 @@
 /**
  * “设置”软件独立模块 (SettingsApp)
- * HTML 完全由 JS 动态生成注入，无需在 index.html 预载任何代码
+ * HTML 完全由 JS 动态生成注入，主文件零污染
  */
 
 const SettingsApp = {
@@ -25,9 +25,15 @@ const SettingsApp = {
 
         <!-- 设置面板主体 -->
         <div class="settings-panel">
-          <!-- API 配置 -->
+          <!-- 通用 API 配置 -->
           <div class="settings-group">
             <div class="settings-group-title">API 接口配置</div>
+            
+            <div class="settings-field">
+              <label for="set-api-url">API Base URL</label>
+              <input type="text" id="set-api-url" placeholder="https://api.openai.com/v1">
+            </div>
+
             <div class="settings-field">
               <label for="set-api-key">API Key</label>
               <div class="input-row">
@@ -35,14 +41,12 @@ const SettingsApp = {
                 <button type="button" class="st-btn" style="padding:0 12px; font-size:12px;" onclick="SettingsApp.togglePasswordVisibility('set-api-key')">显示</button>
               </div>
             </div>
+
             <div class="settings-field">
-              <label for="set-api-url">API Base URL</label>
-              <input type="text" id="set-api-url" placeholder="https://api.openai.com/v1">
-            </div>
-            <div class="settings-field">
-              <label for="set-api-model">默认 Model 名称</label>
+              <label for="set-api-model">Model 模型名称</label>
               <input type="text" id="set-api-model" placeholder="gpt-4o / deepseek-chat">
             </div>
+
             <button class="st-btn" onclick="SettingsApp.testApiConnection()">测试 API 连通性</button>
           </div>
 
@@ -85,7 +89,7 @@ const SettingsApp = {
     }
   },
 
-  // 4. 辅助功能函数
+  // 4. 辅助功能
   togglePasswordVisibility(inputId) {
     const input = document.getElementById(inputId);
     if (input) input.type = input.type === 'password' ? 'text' : 'password';
@@ -132,7 +136,11 @@ const SettingsApp = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify({ model, messages: [{ role: 'user', content: 'hi' }], max_tokens: 5 })
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'user', content: 'hi' }],
+          max_tokens: 5
+        })
       });
 
       if (response.ok) {
@@ -196,7 +204,7 @@ const SettingsApp = {
   }
 };
 
-// 确保在 AppManager 加载完毕后将当前应用注册进去
+// 自动向全局调度中心注册自身
 if (window.AppManager) {
   AppManager.register('settings', SettingsApp);
 } else {
