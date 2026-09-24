@@ -1,6 +1,6 @@
 /**
  * “设置”软件独立模块 (SettingsApp)
- * 支持 3 套 API 自定义名称预设、美化下拉选择框、与 Toast 胶囊组件集成
+ * 支持 3 套 API 预设管理（合并预设与模型名称），优化保存按钮布局与 Toast 集成
  */
 
 const SettingsApp = {
@@ -8,11 +8,11 @@ const SettingsApp = {
   containerEl: null,
   activeSlot: 1,
 
-  // 默认预设结构
+  // 默认预设数据结构
   apiSlots: {
-    1: { name: '默认配置 1', apiUrl: '', apiKey: '', apiModel: '' },
-    2: { name: '备用配置 2', apiUrl: '', apiKey: '', apiModel: '' },
-    3: { name: '备用配置 3', apiUrl: '', apiKey: '', apiModel: '' }
+    1: { name: 'gpt-4o', apiUrl: '', apiKey: '' },
+    2: { name: 'deepseek-chat', apiUrl: '', apiKey: '' },
+    3: { name: 'claude-3-5-sonnet', apiUrl: '', apiKey: '' }
   },
 
   // 1. 初始化并注入应用 DOM
@@ -41,9 +41,9 @@ const SettingsApp = {
               <span style="font-size: 12px; color: #666;">（最多 3 套预设）</span>
             </div>
 
-            <!-- 美化后的高透玻璃槽位选择器 -->
+            <!-- 槽位切换选择器 -->
             <div class="settings-field">
-              <label>切换配置预设</label>
+              <label>切换 API 预设</label>
               <div class="custom-glass-select-wrapper">
                 <select id="set-api-slot-select" class="custom-glass-select" onchange="SettingsApp.switchSlot(this.value)">
                   <!-- 动态渲染 -->
@@ -51,10 +51,10 @@ const SettingsApp = {
               </div>
             </div>
 
-            <!-- 新增：自定义预设名称 -->
+            <!-- 统一后的：预设 / 模型名称 -->
             <div class="settings-field">
-              <label for="set-slot-name">预设名称 / Nom</label>
-              <input type="text" id="set-slot-name" placeholder="如：GPT-4o 常用 / 备用 DeepSeek" oninput="SettingsApp.handleNameInput(this.value)">
+              <label for="set-slot-name">预设 / 模型名称 (Model Name)</label>
+              <input type="text" id="set-slot-name" placeholder="如：gpt-4o / deepseek-chat" oninput="SettingsApp.handleNameInput(this.value)">
             </div>
             
             <div class="settings-field">
@@ -70,12 +70,11 @@ const SettingsApp = {
               </div>
             </div>
 
-            <div class="settings-field">
-              <label for="set-api-model">Model 模型名称</label>
-              <input type="text" id="set-api-model" placeholder="gpt-4o / deepseek-chat">
+            <!-- 按钮组：测试 API + 保存本模块配置 -->
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+              <button class="st-btn" onclick="SettingsApp.testApiConnection()">测试当前配置连通性</button>
+              <button class="st-btn primary" style="height: 42px;" onclick="SettingsApp.saveSettings()">保存 API 配置</button>
             </div>
-
-            <button class="st-btn" onclick="SettingsApp.testApiConnection()">测试当前配置连通性</button>
           </div>
 
           <!-- 数据管理 -->
@@ -88,11 +87,6 @@ const SettingsApp = {
             </div>
             <button class="st-btn danger" style="margin-top: 8px;" onclick="AuthManager.logout()">退出当前账号</button>
             <button class="st-btn danger" style="margin-top: 8px;" onclick="SettingsApp.resetAll()">恢复出厂默认</button>
-          </div>
-
-          <!-- 保存按钮 -->
-          <div style="margin-top: auto; padding-top: 10px;">
-            <button class="st-btn primary" style="width: 100%; height: 46px;" onclick="SettingsApp.saveSettings()">保存全部配置</button>
           </div>
         </div>
       </div>
@@ -121,7 +115,7 @@ const SettingsApp = {
     if (input) input.type = input.type === 'password' ? 'text' : 'password';
   },
 
-  // 刷新下拉菜单的选项（使用用户命名的名称）
+  // 刷新下拉菜单的选项（使用统一后的模型/预设名称）
   renderSelectOptions() {
     const selectEl = document.getElementById('set-api-slot-select');
     if (!selectEl) return;
@@ -134,7 +128,7 @@ const SettingsApp = {
     selectEl.value = this.activeSlot;
   },
 
-  // 当用户实时修改名称输入框时，更新下拉列表中的显示名称
+  // 实时同步输入框名称到下拉选项
   handleNameInput(val) {
     this.apiSlots[this.activeSlot].name = val.trim() || `配置 ${this.activeSlot}`;
     this.renderSelectOptions();
@@ -151,21 +145,19 @@ const SettingsApp = {
     const name = document.getElementById('set-slot-name').value.trim() || `配置 ${slotNum}`;
     const key = document.getElementById('set-api-key').value.trim();
     const url = document.getElementById('set-api-url').value.trim();
-    const model = document.getElementById('set-api-model').value.trim();
     
-    this.apiSlots[slotNum] = { name, apiUrl: url, apiKey: key, apiModel: model };
+    this.apiSlots[slotNum] = { name, apiUrl: url, apiKey: key, apiModel: name };
   },
 
   fillInputsFromSlot(slotNum) {
-    const data = this.apiSlots[slotNum] || { name: `配置 ${slotNum}`, apiUrl: '', apiKey: '', apiModel: '' };
+    const data = this.apiSlots[slotNum] || { name: `配置 ${slotNum}`, apiUrl: '', apiKey: '' };
     document.getElementById('set-slot-name').value = data.name || '';
     document.getElementById('set-api-url').value = data.apiUrl || '';
     document.getElementById('set-api-key').value = data.apiKey || '';
-    document.getElementById('set-api-model').value = data.apiModel || '';
     this.renderSelectOptions();
   },
 
-  // 保存全部配置
+  // 保存全部 API 配置
   saveSettings() {
     this.saveCurrentInputsToSlot(this.activeSlot);
 
@@ -174,7 +166,7 @@ const SettingsApp = {
       slots: this.apiSlots,
       apiKey: this.apiSlots[this.activeSlot].apiKey,
       apiUrl: this.apiSlots[this.activeSlot].apiUrl,
-      apiModel: this.apiSlots[this.activeSlot].apiModel
+      apiModel: this.apiSlots[this.activeSlot].name // 使用统一的模型名称
     };
 
     localStorage.setItem('french_desktop_settings', JSON.stringify(fullConfig));
@@ -184,12 +176,10 @@ const SettingsApp = {
     }
 
     if (window.Toast) {
-      Toast.show({ message: '配置已保存', type: 'success', duration: 2000 });
+      Toast.show({ message: 'API 配置已成功保存', type: 'success', duration: 2000 });
     } else {
-      alert('配置已成功保存！');
+      alert('API 配置已成功保存！');
     }
-    
-    AppManager.backToHome();
   },
 
   // 读取配置
@@ -203,10 +193,9 @@ const SettingsApp = {
           this.activeSlot = data.activeSlot || 1;
         } else {
           this.apiSlots[1] = {
-            name: '默认配置',
+            name: data.apiModel || 'gpt-4o',
             apiUrl: data.apiUrl || '',
-            apiKey: data.apiKey || '',
-            apiModel: data.apiModel || ''
+            apiKey: data.apiKey || ''
           };
           this.activeSlot = 1;
         }
@@ -217,11 +206,11 @@ const SettingsApp = {
     }
   },
 
-  // 测试连通性（使用玻璃胶囊 Toast 弹窗）
+  // 测试 API 连通性
   async testApiConnection() {
     const apiKey = document.getElementById('set-api-key').value.trim();
     let apiUrl = document.getElementById('set-api-url').value.trim() || 'https://api.openai.com/v1';
-    const model = document.getElementById('set-api-model').value.trim() || 'gpt-3.5-turbo';
+    const model = document.getElementById('set-slot-name').value.trim() || 'gpt-3.5-turbo';
 
     if (!apiKey) {
       if (window.Toast) Toast.show({ message: '请先输入 API Key', type: 'error', duration: 2500 });
@@ -229,7 +218,6 @@ const SettingsApp = {
       return;
     }
 
-    // 弹出加载中胶囊 Toast ("...")
     const toastHandle = window.Toast 
       ? Toast.show({ message: '测试中...', type: 'loading' }) 
       : null;
@@ -331,7 +319,7 @@ const SettingsApp = {
   }
 };
 
-// 向全局注册
+// 注册应用
 if (window.AppManager) {
   AppManager.register('settings', SettingsApp);
 } else {
