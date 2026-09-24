@@ -221,19 +221,42 @@ const AuthManager = {
     this.applyUserData();
   },
 
+  // 渲染并应用用户绑定的数据（API配置、头像、名字）
   applyUserData() {
     if (!this.currentUser) return;
     const userKey = `user_${this.currentUser.uid}_data`;
     const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
 
+    // 1. 加载 API 设置
     if (userData.settings) {
       localStorage.setItem('french_desktop_settings', JSON.stringify(userData.settings));
       if (window.SettingsApp && typeof SettingsApp.loadSettings === 'function') {
         SettingsApp.loadSettings();
       }
     }
+
+    // 2. 加载用户头像
+    const userAvatar = userData.avatar || localStorage.getItem('widget_user_avatar');
+    if (userAvatar) {
+      const avatarImgs = document.querySelectorAll('#user-avatar-img, .user-avatar-img');
+      avatarImgs.forEach(img => img.src = userAvatar);
+    }
+
+    // 3. 加载用户名字
+    const userName = userData.name || userData.nickname || this.currentUser.nickname || localStorage.getItem('widget_user_name');
+    if (userName) {
+      const nameEl = document.getElementById('user-name-text');
+      if (nameEl) {
+        if (nameEl.tagName === 'INPUT') {
+          nameEl.value = userName;
+        } else {
+          nameEl.innerText = userName;
+        }
+      }
+    }
   },
 
+  // 保存当前用户的专项数据
   saveUserData(categoryKey, data) {
     if (!this.currentUser) return;
     const userKey = `user_${this.currentUser.uid}_data`;
@@ -251,37 +274,4 @@ const AuthManager = {
 // 启动执行
 document.addEventListener('DOMContentLoaded', () => {
   AuthManager.init();
-});
-
-/**
- * 2. 页面加载时读取并恢复保存的头像
- */
-function loadSavedAvatar() {
-  let savedAvatar = null;
-
-  // 优先读取当前登录账号的头像数据
-  if (window.AuthManager && AuthManager.currentUser) {
-    const userKey = `user_${AuthManager.currentUser.uid}_data`;
-    try {
-      const userData = JSON.parse(localStorage.getItem(userKey) || '{}');
-      savedAvatar = userData.avatar;
-    } catch(e) {}
-  }
-
-  // 如果账号数据里没有，再读取公共存储区
-  if (!savedAvatar) {
-    savedAvatar = localStorage.getItem('french_desktop_avatar');
-  }
-
-  // 如果找到了保存的 Base64 头像，更新页面中所有的头像元素
-  if (savedAvatar) {
-    const avatarImgs = document.querySelectorAll('.user-avatar-img');
-    avatarImgs.forEach(img => img.src = savedAvatar);
-  }
-}
-
-// 页面 DOM 加载完毕后自动运行恢复
-document.addEventListener('DOMContentLoaded', () => {
-  // 稍作延迟确保用户 Auth 状态已载入
-  setTimeout(loadSavedAvatar, 50);
 });
