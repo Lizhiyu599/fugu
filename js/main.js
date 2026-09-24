@@ -1,120 +1,76 @@
 // 触发隐藏的文件选择器
 function triggerAvatarUpload(inputId) {
   const input = document.getElementById(inputId);
-  if (input) {
-    input.click();
-  }
+  if (input) input.click();
 }
 
-// 处理换头像：直接将选好的图片作为 CSS 背景图渲染到头像框上
+// 处理换头像：渲染 + 持久化
 function handleAvatarChange(event, frameId, plusId) {
   const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const frame = document.getElementById(frameId);
-      const plusIcon = document.getElementById(plusId);
-      
-      if (frame) {
-        // 设置背景图片
-        frame.style.backgroundImage = `url('${e.target.result}')`;
-      }
-      if (plusIcon) {
-        // 隐藏加号占位符
-        plusIcon.style.display = 'none';
-      }
-    };
-    reader.readAsDataURL(file);
-  }
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const frame = document.getElementById(frameId);
+    const plusIcon = document.getElementById(plusId);
+
+    if (frame) {
+      frame.style.backgroundImage = `url('${e.target.result}')`;
+      frame.style.backgroundSize = 'cover';
+      frame.style.backgroundPosition = 'center';
+    }
+    if (plusIcon) plusIcon.style.display = 'none';
+
+    // 持久化：用 frameId 作为 key，区分左右头像
+    try {
+      localStorage.setItem(`widget_avatar_${frameId}`, e.target.result);
+    } catch (err) {
+      console.warn('头像保存失败（可能图片太大超出 localStorage 容量）:', err);
+      alert('头像保存失败：图片太大，请换一张小一点的图。');
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
-/**
- * ==========================================
- * 桌面小组件（头像 + 名字）本地化持久保存模块
- * ==========================================
- */
-const ProfileWidgetManager = {
-  // 1. 初始化小组件事件与自动加载数据
-  init() {
-    this.loadProfile(); // 打开/刷新页面时自动读取
-    this.bindEvents();  // 绑定编辑事件
-  },
+// 名字持久化：给两个 .avatar-name 分别取一个稳定的 key
+function getAvatarBoxKey(nameEl) {
+  // 找到名字所在的 .avatar-box，再找里面的 avatar-frame 的 id
+  const box = nameEl.closest('.avatar-box');
+  const frame = box?.querySelector('.avatar-frame');
+  return frame?.id || null; // 'left-avatar-frame' / 'right-avatar-frame'
+}
 
-  // 2. 从 localStorage 读取并恢复头像和名字
-  loadProfile() {
-    const savedAvatar = localStorage.getItem('widget_user_avatar');
-    const savedName = localStorage.getItem('widget_user_name');
+function initProfilePersistence() {
+  // 1. 恢复头像
+  ['left-avatar-frame', 'right-avatar-frame'].forEach((frameId) => {
+    const saved = localStorage.getItem(`widget_avatar_${frameId}`);
+    if (!saved) return;
+    const frame = document.getElementById(frameId);
+    if (!frame) return;
+    frame.style.backgroundImage = `url('${saved}')`;
+    frame.style.backgroundSize = 'cover';
+    frame.style.backgroundPosition = 'center';
+    const plus = frame.querySelector('.avatar-plus');
+    if (plus) plus.style.display = 'none';
+  });
 
-    // 恢复头像
-    if (savedAvatar) {
-      const avatarEl = document.getElementById('user-avatar-img'); // 请确认你头像 <img> 的 ID
-      if (avatarEl) avatarEl.src = savedAvatar;
-    }
+  // 2. 恢复名字 + 绑定保存事件
+  document.querySelectorAll('.avatar-name').forEach((nameEl) => {
+    const key = getAvatarBoxKey(nameEl);
+    if (!key) return;
 
-    // 恢复名字
-    if (savedName) {
-      const nameEl = document.getElementById('user-name-text'); // 请确认你名字元素的 ID
-      if (nameEl) {
-        if (nameEl.tagName === 'INPUT') {
-          nameEl.value = savedName;
-        } else {
-          nameEl.innerText = savedName;
-        }
-      }
-    }
-  },
+    // 恢复
+    const savedName = localStorage.getItem(`widget_name_${key}`);
+    if (savedName !== null) nameEl.textContent = savedName;
 
-  // 3. 保存名字
-  saveName(newName) {
-    const trimmed = newName.trim();
-    if (trimmed) {
-      localStorage.setItem('widget_user_name', trimmed);
-    }
-  },
+    // 保存（失焦时存，避免每次输入都写 localStorage）
+    nameEl.addEventListener('blur', () => {
+      localStorage.setItem(`widget_name_${key}`, nameEl.textContent.trim());
+    });
+  });
+}
 
-  // 4. 保存头像 (转换为 Base64)
-  saveAvatarFile(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64Data = e.target.result;
-      // 存入本地缓存
-      localStorage.setItem('widget_user_avatar', base64Data);
-      
-      // 实时更新 DOM 显示
-      const avatarEl = document.getElementById('user-avatar-img');
-      if (avatarEl) avatarEl.src = base64Data;
-    };
-    reader.readAsDataURL(file);
-  },
-
-  // 5. 自动绑定 DOM 事件
-  bindEvents() {
-    // 监听名字输入框/可编辑文本
-    const nameEl = document.getElementById('user-name-text');
-    if (nameEl) {
-      // 如果名字是 input 输入框
-      nameEl.addEventListener('input', (e) => this.saveName(e.target.value));
-      // 如果名字是 contenteditable 元素
-      nameEl.addEventListener('blur', (e) => this.saveName(e.target.innerText));
-    }
-
-    // 监听头像文件选择框
-    const avatarInput = document.getElementById('user-avatar-input'); // 请确认上传 <input type="file"> 的 ID
-    if (avatarInput) {
-      avatarInput.addEventListener('change', (e) => {
-        if (e.target.files && e.target.files[0]) {
-          this.saveAvatarFile(e.target.files[0]);
-        }
-      });
-    }
-  }
-};
-
-// 页面 DOM 加载完成后自动运行小组件管理器
+// DOM 就绪后初始化
 document.addEventListener('DOMContentLoaded', () => {
-  // 延时 100ms 确保桌面 DOM 节点已完全渲染
-  setTimeout(() => {
-    ProfileWidgetManager.init();
-  }, 100);
+  initProfilePersistence();
 });
