@@ -1,10 +1,105 @@
 /* ==========================================
-   底部 Dock 栏：较窄的精致高透玻璃
+   2x4 高透玻璃小组件（占据 4 列宽度 x 2 行高度）
+   ========================================== */
+.widget-2x4-avatars {
+  /* 100% 撑满两侧边距内的全部宽度（贯穿 4 列） */
+  width: 100%;
+  /* 2 行的高度（200px 左右，符合标准 2 行组件比例） */
+  height: 180px; 
+  padding: 20px;
+  border-radius: 32px;
+
+  /* 薄高透玻璃材质 */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+
+  /* 头像内容完全居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 两个头像紧挨着放置 */
+.avatars-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px; /* 两个头像贴得非常近 */
+}
+
+/* 单个头像及名字组 */
+.avatar-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* 头像框 */
+.avatar-frame {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 0.5px solid var(--glass-border);
+  background-color: rgba(255, 255, 255, 0.12);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.avatar-frame:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* 空白加号占位 */
+.avatar-plus {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 300;
+  pointer-events: none;
+}
+
+/* 可编辑名字 */
+.avatar-name {
+  font-size: 13px;
+  color: var(--text-main);
+  opacity: 0.85;
+  padding: 2px 6px;
+  border-radius: 4px;
+  outline: none;
+  text-align: center;
+  min-width: 40px;
+  border: 1px transparent dashed;
+}
+
+.avatar-name:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.avatar-name:focus {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+
+/* ==========================================
+   底部 Dock 栏（横向全宽铺开）
    ========================================== */
 .dock-wrapper {
   position: absolute;
   bottom: 24px;
   width: 100%;
+  padding: 0 20px; /* 左右与桌面小组件保持一致的边距 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,11 +107,10 @@
 }
 
 .glass-dock {
-  width: 75%;
-  max-width: 320px; /* 缩小 Dock 栏宽度，使其更紧凑 */
-  height: 68px;
-  padding: 0 16px;
-  border-radius: 22px;
+  width: 100%; /* 不限制死最大宽度，撑满底栏 */
+  height: 80px;
+  padding: 0 20px;
+  border-radius: 30px;
   
   /* 薄高透玻璃 */
   background: var(--glass-bg);
@@ -28,103 +122,4 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-}
-
-
-/* ==========================================
-   2x4 高透玻璃小组件：拓宽、紧凑双头像
-   ========================================== */
-.widget-2x4-avatars {
-  width: 90%;
-  max-width: 420px; /* 小组件保持较宽的比例 */
-  height: 98px;
-  margin-top: 70px; /* 增大顶部预留高度，为未来的状态栏留足空间 */
-  padding: 0 16px;
-  border-radius: 22px;
-
-  /* 薄高透玻璃 */
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 0.5px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-
-  /* 严格上下左右垂直居中 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* 两个头像紧密挨在一起的容器 */
-.avatars-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px; /* 两个头像间距缩到很近，彻底去掉了分隔符 */
-}
-
-/* 单个头像与名字组 */
-.avatar-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-/* 缩小版的圆形头像框 (46px) */
-.avatar-frame {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 0.5px solid var(--glass-border);
-  background-color: rgba(255, 255, 255, 0.12);
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.avatar-frame:hover {
-  border-color: rgba(255, 255, 255, 0.7);
-}
-
-/* 默认未选择图片时的加号图标 */
-.avatar-plus {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 300;
-  line-height: 1;
-  pointer-events: none;
-}
-
-/* 可点击编辑的名字 */
-.avatar-name {
-  font-size: 12px;
-  color: var(--text-main);
-  opacity: 0.85;
-  padding: 1px 4px;
-  border-radius: 4px;
-  outline: none;
-  text-align: center;
-  min-width: 32px;
-  border: 1px transparent dashed;
-  line-height: 1.2;
-}
-
-.avatar-name:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.avatar-name:focus {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.6);
-  opacity: 1;
 }
