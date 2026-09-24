@@ -4,9 +4,8 @@
 const EmbellirApp = {
   id: 'embellir',
   containerEl: null,
-  timer: null,
 
-  // 默认预设壁纸列表
+  // 预设壁纸选项（仅作供选择的项目）
   wallpapers: [
     { id: 'wp1', name: 'Rétro Gold', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80' },
     { id: 'wp2', name: 'Paris Night', url: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80' },
@@ -88,7 +87,6 @@ const EmbellirApp = {
     const grid = document.getElementById('wallpaper-grid');
     if (!grid) return;
 
-    // 清除已有预设项，保留自定义上传按钮
     const uploadBtn = grid.querySelector('.wallpaper-upload-btn');
     grid.innerHTML = '';
     grid.appendChild(uploadBtn);
@@ -102,8 +100,9 @@ const EmbellirApp = {
     });
   },
 
-  // 设置桌面背景
+  // 设置桌面背景（只有主动选择时调用）
   setWallpaper(url) {
+    if (!url) return;
     this.currentWallpaper = url;
     const desktop = document.getElementById('desktop');
     if (desktop) {
@@ -112,10 +111,8 @@ const EmbellirApp = {
       desktop.style.backgroundPosition = 'center';
     }
 
-    // 更新 UI 选中状态
     this.renderWallpapers();
 
-    // 持久化存储
     localStorage.setItem('embellir_wallpaper', url);
     if (window.AuthManager && AuthManager.currentUser) {
       AuthManager.saveUserData('embellir_wallpaper', url);
@@ -152,7 +149,7 @@ const EmbellirApp = {
 
   // 恢复状态
   loadState() {
-    // 1. 壁纸恢复
+    // 1. 壁纸恢复（若之前没保存过，则不修改默认背景）
     let savedWp = null;
     if (window.AuthManager && AuthManager.currentUser) {
       const userKey = `user_${AuthManager.currentUser.uid}_data`;
@@ -162,14 +159,12 @@ const EmbellirApp = {
       } catch(e) {}
     }
     if (!savedWp) savedWp = localStorage.getItem('embellir_wallpaper');
-    
+
     if (savedWp) {
       this.setWallpaper(savedWp);
-    } else if (this.wallpapers[0]) {
-      this.setWallpaper(this.wallpapers[0].url);
     }
 
-    // 2. 信息栏开关状态恢复
+    // 2. 信息栏开关恢复
     let savedBarState = null;
     if (window.AuthManager && AuthManager.currentUser) {
       const userKey = `user_${AuthManager.currentUser.uid}_data`;
@@ -189,7 +184,7 @@ const EmbellirApp = {
     this.toggleInfoBar(this.isInfoBarEnabled);
   },
 
-  // 初始化时间与电量更新
+  // 顶栏实时时间与电量
   initInfoBarService() {
     const updateTime = () => {
       const timeEl = document.getElementById('info-time-text');
@@ -203,7 +198,6 @@ const EmbellirApp = {
     updateTime();
     setInterval(updateTime, 1000);
 
-    // 监测真实电量 (Battery API)
     if (navigator.getBattery) {
       navigator.getBattery().then(battery => {
         const updateBattery = () => {
