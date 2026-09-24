@@ -1,13 +1,45 @@
 /* ==========================================
-   2x4 高透玻璃小组件（占据 4 列宽度 x 2 行高度）
+   底部 Dock 栏（横向全宽铺开）
+   ========================================== */
+.dock-wrapper {
+  position: absolute;
+  bottom: 24px;
+  width: 100%;
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.glass-dock {
+  width: 100%;
+  height: 80px;
+  padding: 0 20px;
+  border-radius: 30px;
+  
+  /* 薄高透玻璃 */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 0.5px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+
+/* ==========================================
+   2x4 高透玻璃小组件（缩矮版：140px 高度）
    ========================================== */
 .widget-2x4-avatars {
-  /* 100% 撑满两侧边距内的全部宽度（贯穿 4 列） */
   width: 100%;
-  /* 2 行的高度（200px 左右，符合标准 2 行组件比例） */
-  height: 180px; 
-  padding: 20px;
-  border-radius: 32px;
+  /* 小组件高度缩矮到 140px */
+  height: 140px; 
+  padding: 16px;
+  border-radius: 28px;
 
   /* 薄高透玻璃材质 */
   background: var(--glass-bg);
@@ -16,7 +48,6 @@
   border: 0.5px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 
-  /* 头像内容完全居中 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +59,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px; /* 两个头像贴得非常近 */
+  gap: 12px;
 }
 
 /* 单个头像及名字组 */
@@ -36,14 +67,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
 }
 
-/* 头像框 */
+/* 头像框稍微缩微到 56px */
 .avatar-frame {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: 0.5px solid var(--glass-border);
   background-color: rgba(255, 255, 255, 0.12);
@@ -62,7 +93,7 @@
 
 /* 空白加号占位 */
 .avatar-plus {
-  font-size: 20px;
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 300;
   pointer-events: none;
@@ -70,7 +101,7 @@
 
 /* 可编辑名字 */
 .avatar-name {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-main);
   opacity: 0.85;
   padding: 2px 6px;
@@ -89,37 +120,4 @@
 .avatar-name:focus {
   background: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.6);
-}
-
-
-/* ==========================================
-   底部 Dock 栏（横向全宽铺开）
-   ========================================== */
-.dock-wrapper {
-  position: absolute;
-  bottom: 24px;
-  width: 100%;
-  padding: 0 20px; /* 左右与桌面小组件保持一致的边距 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-}
-
-.glass-dock {
-  width: 100%; /* 不限制死最大宽度，撑满底栏 */
-  height: 80px;
-  padding: 0 20px;
-  border-radius: 30px;
-  
-  /* 薄高透玻璃 */
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 0.5px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
 }
