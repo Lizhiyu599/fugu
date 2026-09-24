@@ -1,14 +1,21 @@
 /**
  * “设置”软件独立模块 (SettingsApp)
- * 支持 3 套 API 配置管理（当前使用 + 2个预设备用），并自动绑定 AuthManager
+ * 支持 3 套 API 自定义名称预设、美化下拉选择框、与 Toast 胶囊组件集成
  */
 
 const SettingsApp = {
   id: 'settings',
   containerEl: null,
-  activeSlot: 1, // 当前正在编辑/查看的配置槽位 (1, 2, 3)
+  activeSlot: 1,
 
-  // 1. 初始化并注入应用 HTML DOM 结构
+  // 默认预设结构
+  apiSlots: {
+    1: { name: '默认配置 1', apiUrl: '', apiKey: '', apiModel: '' },
+    2: { name: '备用配置 2', apiUrl: '', apiKey: '', apiModel: '' },
+    3: { name: '备用配置 3', apiUrl: '', apiKey: '', apiModel: '' }
+  },
+
+  // 1. 初始化并注入应用 DOM
   render() {
     if (this.containerEl) return;
 
@@ -27,21 +34,27 @@ const SettingsApp = {
 
         <!-- 设置面板主体 -->
         <div class="settings-panel">
-          <!-- API 接口配置（支持3套预设） -->
+          <!-- API 接口配置 -->
           <div class="settings-group">
             <div class="settings-group-title" style="display: flex; justify-content: space-between; align-items: center;">
               <span>API 接口配置</span>
-              <span style="font-size: 12px; color: #666;">（最多保存 3 套）</span>
+              <span style="font-size: 12px; color: #666;">（最多 3 套预设）</span>
             </div>
 
-            <!-- 槽位切换 selector -->
+            <!-- 美化后的高透玻璃槽位选择器 -->
             <div class="settings-field">
-              <label>选择配置预设槽位</label>
-              <select id="set-api-slot-select" style="height:38px; border-radius:8px; border:1px solid rgba(0,0,0,0.15); padding:0 10px; outline:none; background:#fff; font-size:13px;" onchange="SettingsApp.switchSlot(this.value)">
-                <option value="1">配置 1 (当前主配置)</option>
-                <option value="2">配置 2 (备用预设)</option>
-                <option value="3">配置 3 (备用预设)</option>
-              </select>
+              <label>切换配置预设</label>
+              <div class="custom-glass-select-wrapper">
+                <select id="set-api-slot-select" class="custom-glass-select" onchange="SettingsApp.switchSlot(this.value)">
+                  <!-- 动态渲染 -->
+                </select>
+              </div>
+            </div>
+
+            <!-- 新增：自定义预设名称 -->
+            <div class="settings-field">
+              <label for="set-slot-name">预设名称 / Nom</label>
+              <input type="text" id="set-slot-name" placeholder="如：GPT-4o 常用 / 备用 DeepSeek" oninput="SettingsApp.handleNameInput(this.value)">
             </div>
             
             <div class="settings-field">
@@ -62,7 +75,7 @@ const SettingsApp = {
               <input type="text" id="set-api-model" placeholder="gpt-4o / deepseek-chat">
             </div>
 
-            <button class="st-btn" onclick="SettingsApp.testApiConnection()">测试当前测试槽位 API 连通性</button>
+            <button class="st-btn" onclick="SettingsApp.testApiConnection()">测试当前配置连通性</button>
           </div>
 
           <!-- 数据管理 -->
@@ -89,7 +102,6 @@ const SettingsApp = {
     this.containerEl = document.getElementById('app-view-settings');
   },
 
-  // 2. 打开应用
   open() {
     this.render();
     this.loadSettings();
@@ -98,27 +110,37 @@ const SettingsApp = {
     }, 10);
   },
 
-  // 3. 退出应用
   close() {
     if (this.containerEl) {
       this.containerEl.classList.remove('active');
     }
   },
 
-  // 4. 密码可见性切换
   togglePasswordVisibility(inputId) {
     const input = document.getElementById(inputId);
     if (input) input.type = input.type === 'password' ? 'text' : 'password';
   },
 
-  // 临时缓存 3 个槽位的数据结构
-  apiSlots: {
-    1: { apiUrl: '', apiKey: '', apiModel: '' },
-    2: { apiUrl: '', apiKey: '', apiModel: '' },
-    3: { apiUrl: '', apiKey: '', apiModel: '' }
+  // 刷新下拉菜单的选项（使用用户命名的名称）
+  renderSelectOptions() {
+    const selectEl = document.getElementById('set-api-slot-select');
+    if (!selectEl) return;
+
+    selectEl.innerHTML = `
+      <option value="1">${this.apiSlots[1].name || '配置 1'}</option>
+      <option value="2">${this.apiSlots[2].name || '配置 2'}</option>
+      <option value="3">${this.apiSlots[3].name || '配置 3'}</option>
+    `;
+    selectEl.value = this.activeSlot;
   },
 
-  // 切换槽位时先暂存当前输入框，再载入新槽位
+  // 当用户实时修改名称输入框时，更新下拉列表中的显示名称
+  handleNameInput(val) {
+    this.apiSlots[this.activeSlot].name = val.trim() || `配置 ${this.activeSlot}`;
+    this.renderSelectOptions();
+  },
+
+  // 切换槽位
   switchSlot(newSlot) {
     this.saveCurrentInputsToSlot(this.activeSlot);
     this.activeSlot = parseInt(newSlot);
@@ -126,48 +148,51 @@ const SettingsApp = {
   },
 
   saveCurrentInputsToSlot(slotNum) {
+    const name = document.getElementById('set-slot-name').value.trim() || `配置 ${slotNum}`;
     const key = document.getElementById('set-api-key').value.trim();
     const url = document.getElementById('set-api-url').value.trim();
     const model = document.getElementById('set-api-model').value.trim();
-    this.apiSlots[slotNum] = { apiUrl: url, apiKey: key, apiModel: model };
+    
+    this.apiSlots[slotNum] = { name, apiUrl: url, apiKey: key, apiModel: model };
   },
 
   fillInputsFromSlot(slotNum) {
-    const data = this.apiSlots[slotNum] || { apiUrl: '', apiKey: '', apiModel: '' };
+    const data = this.apiSlots[slotNum] || { name: `配置 ${slotNum}`, apiUrl: '', apiKey: '', apiModel: '' };
+    document.getElementById('set-slot-name').value = data.name || '';
     document.getElementById('set-api-url').value = data.apiUrl || '';
     document.getElementById('set-api-key').value = data.apiKey || '';
     document.getElementById('set-api-model').value = data.apiModel || '';
+    this.renderSelectOptions();
   },
 
-  // 5. 保存全部 3 套配置
+  // 保存全部配置
   saveSettings() {
     this.saveCurrentInputsToSlot(this.activeSlot);
 
-    const activeSlotSelect = document.getElementById('set-api-slot-select');
-    const selectedActive = parseInt(activeSlotSelect ? activeSlotSelect.value : 1);
-
     const fullConfig = {
-      activeSlot: selectedActive,
+      activeSlot: this.activeSlot,
       slots: this.apiSlots,
-      // 兼容旧接口：当前生效的核心配置即为选中的槽位配置
-      apiKey: this.apiSlots[selectedActive].apiKey,
-      apiUrl: this.apiSlots[selectedActive].apiUrl,
-      apiModel: this.apiSlots[selectedActive].apiModel
+      apiKey: this.apiSlots[this.activeSlot].apiKey,
+      apiUrl: this.apiSlots[this.activeSlot].apiUrl,
+      apiModel: this.apiSlots[this.activeSlot].apiModel
     };
 
-    // 本地存储
     localStorage.setItem('french_desktop_settings', JSON.stringify(fullConfig));
 
-    // 绑定当前登录账号并持久化保存
     if (window.AuthManager && AuthManager.currentUser) {
       AuthManager.saveUserData('settings', fullConfig);
     }
 
-    alert('3 套 API 配置已全部成功保存！');
+    if (window.Toast) {
+      Toast.show({ message: '配置已保存', type: 'success', duration: 2000 });
+    } else {
+      alert('配置已成功保存！');
+    }
+    
     AppManager.backToHome();
   },
 
-  // 6. 读取配置
+  // 读取配置
   loadSettings() {
     const saved = localStorage.getItem('french_desktop_settings');
     if (saved) {
@@ -177,33 +202,39 @@ const SettingsApp = {
           this.apiSlots = data.slots;
           this.activeSlot = data.activeSlot || 1;
         } else {
-          // 向下兼容单配置结构
           this.apiSlots[1] = {
+            name: '默认配置',
             apiUrl: data.apiUrl || '',
             apiKey: data.apiKey || '',
             apiModel: data.apiModel || ''
           };
           this.activeSlot = 1;
         }
-
-        const slotSelect = document.getElementById('set-api-slot-select');
-        if (slotSelect) slotSelect.value = this.activeSlot;
-
         this.fillInputsFromSlot(this.activeSlot);
       } catch (e) {}
+    } else {
+      this.renderSelectOptions();
     }
   },
 
-  // 7. 测试连通性
+  // 测试连通性（使用玻璃胶囊 Toast 弹窗）
   async testApiConnection() {
     const apiKey = document.getElementById('set-api-key').value.trim();
     let apiUrl = document.getElementById('set-api-url').value.trim() || 'https://api.openai.com/v1';
     const model = document.getElementById('set-api-model').value.trim() || 'gpt-3.5-turbo';
 
-    if (!apiKey) return alert('请先输入当前槽位的 API Key！');
+    if (!apiKey) {
+      if (window.Toast) Toast.show({ message: '请先输入 API Key', type: 'error', duration: 2500 });
+      else alert('请先输入 API Key！');
+      return;
+    }
+
+    // 弹出加载中胶囊 Toast ("...")
+    const toastHandle = window.Toast 
+      ? Toast.show({ message: '测试中...', type: 'loading' }) 
+      : null;
 
     const targetUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
-    alert(`正在测试 [配置槽位 ${this.activeSlot}] 连通性，请稍候...`);
 
     try {
       const response = await fetch(targetUrl, {
@@ -220,17 +251,20 @@ const SettingsApp = {
       });
 
       if (response.ok) {
-        alert('连接成功！API 接口畅通可用。');
+        if (toastHandle) toastHandle.update('success', '测试成功', 3000);
+        else alert('测试成功！');
       } else {
         const errData = await response.json().catch(() => ({}));
-        alert(`连接失败 (状态码: ${response.status})\n错误信息: ${errData.error?.message || '请求未成功'}`);
+        const msg = errData.error?.message || `错误码: ${response.status}`;
+        if (toastHandle) toastHandle.update('error', `测试失败: ${msg}`, 4000);
+        else alert(`测试失败: ${msg}`);
       }
     } catch (err) {
-      alert(`网络错误，无法连接到该地址：\n${err.message}`);
+      if (toastHandle) toastHandle.update('error', '网络连接失败', 4000);
+      else alert(`网络错误: ${err.message}`);
     }
   },
 
-  // 8. 导出数据备份
   exportData() {
     try {
       this.saveCurrentInputsToSlot(this.activeSlot);
@@ -278,7 +312,7 @@ const SettingsApp = {
             AuthManager.saveUserData('settings', imported.settings);
           }
           this.loadSettings();
-          alert('数据恢复成功！');
+          if (window.Toast) Toast.show({ message: '数据恢复成功', type: 'success', duration: 2000 });
         } else {
           alert('备份文件格式不符合规范！');
         }
@@ -289,7 +323,6 @@ const SettingsApp = {
     reader.readAsText(file);
   },
 
-  // 9. 恢复出厂设置
   resetAll() {
     if (confirm('确定要清空所有配置并恢复出厂设置吗？此操作不可撤销。')) {
       localStorage.clear();
@@ -298,7 +331,7 @@ const SettingsApp = {
   }
 };
 
-// 自动向全局调度中心注册
+// 向全局注册
 if (window.AppManager) {
   AppManager.register('settings', SettingsApp);
 } else {
