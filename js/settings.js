@@ -1,6 +1,6 @@
 /**
  * “设置”软件独立模块 (SettingsApp)
- * 适配最新图片返回按键、去除中文子标题、稳定导出备份
+ * 已适配：图片返回按键、去除中文子标题、备份导出、以及与 AuthManager 账号同步绑定
  */
 
 const SettingsApp = {
@@ -59,7 +59,8 @@ const SettingsApp = {
               <button class="st-btn" onclick="SettingsApp.triggerImport()">导入数据备份</button>
               <input type="file" id="set-import-file" accept=".json" style="display: none;" onchange="SettingsApp.importData(event)">
             </div>
-            <button class="st-btn danger" onclick="SettingsApp.resetAll()">恢复出厂默认</button>
+            <button class="st-btn danger" style="margin-top: 8px;" onclick="AuthManager.logout()">退出当前账号</button>
+            <button class="st-btn danger" style="margin-top: 8px;" onclick="SettingsApp.resetAll()">恢复出厂默认</button>
           </div>
 
           <!-- 保存按钮 -->
@@ -96,16 +97,27 @@ const SettingsApp = {
     if (input) input.type = input.type === 'password' ? 'text' : 'password';
   },
 
+  // 5. 保存配置（同时写入全局 localStorage 以及当前登录账号的独立空间）
   saveSettings() {
     const apiKey = document.getElementById('set-api-key').value.trim();
     const apiUrl = document.getElementById('set-api-url').value.trim();
     const apiModel = document.getElementById('set-api-model').value.trim();
 
-    localStorage.setItem('french_desktop_settings', JSON.stringify({ apiKey, apiUrl, apiModel }));
+    const settingsData = { apiKey, apiUrl, apiModel };
+
+    // 保存到全局配置
+    localStorage.setItem('french_desktop_settings', JSON.stringify(settingsData));
+
+    // 如果启用了账号系统，绑定保存到当前账号下
+    if (window.AuthManager && AuthManager.currentUser) {
+      AuthManager.saveUserData('settings', settingsData);
+    }
+
     alert('配置已成功保存！');
     AppManager.backToHome();
   },
 
+  // 6. 读取配置
   loadSettings() {
     const saved = localStorage.getItem('french_desktop_settings');
     if (saved) {
@@ -120,6 +132,7 @@ const SettingsApp = {
     }
   },
 
+  // 7. 测试连通性
   async testApiConnection() {
     const apiKey = document.getElementById('set-api-key').value.trim();
     let apiUrl = document.getElementById('set-api-url').value.trim() || 'https://api.openai.com/v1';
@@ -155,7 +168,7 @@ const SettingsApp = {
     }
   },
 
-  // 修复导出功能：采用 Blob 生成真实可下载文件流
+  // 8. 导出数据备份
   exportData() {
     try {
       const settingsData = JSON.parse(localStorage.getItem('french_desktop_settings') || '{}');
@@ -198,6 +211,9 @@ const SettingsApp = {
         const imported = JSON.parse(e.target.result);
         if (imported.settings) {
           localStorage.setItem('french_desktop_settings', JSON.stringify(imported.settings));
+          if (window.AuthManager && AuthManager.currentUser) {
+            AuthManager.saveUserData('settings', imported.settings);
+          }
           this.loadSettings();
           alert('数据恢复成功！');
         } else {
@@ -210,6 +226,7 @@ const SettingsApp = {
     reader.readAsText(file);
   },
 
+  // 9. 恢复出厂设置
   resetAll() {
     if (confirm('确定要清空所有配置并恢复出厂设置吗？此操作不可撤销。')) {
       localStorage.clear();
